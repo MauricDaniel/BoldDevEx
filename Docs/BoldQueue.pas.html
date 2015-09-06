@@ -1,0 +1,2166 @@
+﻿<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mg="http://www.araxis.com/2002/Merge/Reporting" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Araxis Merge File Comparison Report</title>
+<style type="text/css">
+body { background: #fff;  color: #000; margin: 0px 14px 14px 14px; }
+h1, h2, h3, h4, h5 {
+	padding: 0em;
+	margin: 1.5em 0em .25em 0em;
+	text-align: left;
+	font-weight: normal;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 70%;
+	max-width: 55em;
+}
+body, h4, h5, p, ol, ul, li, td, th { font-family: Verdana, Arial, Helvetica, sans-serif; text-align: left; }
+
+h4, h5, p, ol, ul, li { font-size: 70%; }
+input {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 120%;
+}
+
+h1 { margin: 14px 0em 1.2em 0em; font-size: 112%; line-height: 130%;}
+h2 { font-size: 125%; line-height: 84%;}
+h3 { margin-top: 1.4em; font-size: 81%; }
+h4 { margin-top: 1em; font-size: 70%; }
+h5 { margin-top: 1em; font-size: 100%; font-style: italic;}
+h1 strong, h2 strong, h3 strong, h4 strong { font-weight: bold; }
+
+p { margin: 6px 0em 6px 0em; max-width: 55em;}
+p.code, code {}
+p { font-size: 70%; line-height: 125%; }
+table { font-size: 70%;}
+
+p.copyright, .small { font-size: 60%; line-height: 120%; }
+p.copyright { margin: 3px 0px 0px 0px; padding: 0px; text-align: left; }
+acronym { font-variant: small-caps; }
+div.pad { padding: 3px; }
+span.lineEndings { color: red; font-size: 70%; }
+
+table.mgRowGroup, table.mgRowGroupFolder { border: 1px solid #a0a0a0; margin: 10px 0px 10px 0px; width: 100%; table-layout: fixed; border-collapse: collapse; }
+table.mgRowGroup td { vertical-align: top; padding: 0; }
+table.mgRowGroupFolder td { vertical-align: top; padding: 1px 0 1px 0; }
+div.IP { width: 2px; height: 1em; float: left; }
+
+img.mgFldrIcon {float: left; text-align: left; margin: -1px 2px 0px 0px;  height: 16px; width: 16px; border: none; vertical-align: top; background-color: transparent;}
+div.mgFldrIcon {float: left; width: auto;}
+span.left {float: left;width: auto;}
+span.right {float: right;width: auto;}
+
+table.bordered { border-collapse: collapse; border: 1px solid #a0a0a0; margin: 10px 0px 10px 0px;}
+table.bordered th, table.bordered td { vertical-align: top; padding: 3px; border: 1px solid #a0a0a0;}
+table.bordered th { background-color: #e5e5e5; }
+table.bordered td.group { background-color: #f5f5f5; }
+span.disabledNavigation { color: #a0a0a0; }
+div.navigation { margin-top: 14px; font-size: 70%; }
+				
+                span.U1, span.U1 a {float: left; width: auto;color: #000000; background-color: #FFFFFF; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.U1 a {text-decoration: underline;}
+td.U1 {color: #000000; background-color: #FFFFFF; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.R1, span.R1 a {float: left; width: auto;color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.R1 a {text-decoration: underline;}
+td.R1 {color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.I1, span.I1 a {float: left; width: auto;color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.I1 a {text-decoration: underline;}
+td.I1 {color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.C1, span.C1 a {float: left; width: auto;color: #FF0000; background-color: #A6CAF0; font-family: "Courier New"; font-weight: bold; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.C1 a {text-decoration: underline;}
+td.C1 {color: #FF0000; background-color: #A6CAF0; font-family: "Courier New"; font-weight: bold; font-style: normal; font-size: 8pt; text-decoration: none; }
+td.nbgC1 {color: #FF0000; font-family: "Courier New"; font-weight: bold; font-style: normal; font-size: 8pt; text-decoration: none; background-color: #FFFFFF; }
+span.U2, span.U2 a {float: left; width: auto;color: #000000; background-color: #FFFFFF; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.U2 a {text-decoration: underline;}
+td.U2 {color: #000000; background-color: #FFFFFF; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.R2, span.R2 a {float: left; width: auto;color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.R2 a {text-decoration: underline;}
+td.R2 {color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.I2, span.I2 a {float: left; width: auto;color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.I2 a {text-decoration: underline;}
+td.I2 {color: #FF0000; background-color: #C0DCC0; font-family: "Courier New"; font-weight: normal; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.C2, span.C2 a {float: left; width: auto;color: #FF0000; background-color: #A6CAF0; font-family: "Courier New"; font-weight: bold; font-style: normal; font-size: 8pt; text-decoration: none; }
+span.C2 a {text-decoration: underline;}
+td.C2 {color: #FF0000; background-color: #A6CAF0; font-family: "Courier New"; font-weight: bold; font-style: normal; font-size: 8pt; text-decoration: none; }
+td.nbgC2 {color: #FF0000; font-family: "Courier New"; font-weight: bold; font-style: normal; font-size: 8pt; text-decoration: none; background-color: #FFFFFF; }
+
+span.selected { background-color: highlight; color: highlighttext; }
+span.selected a {background-color: highlight; color: highlighttext; text-decoration: underline; }
+			</style>
+</head>
+<body>
+<h1><strong>Araxis Merge File Comparison Report</strong></h1>
+<p>Produced by <strong>Araxis Merge</strong> on <strong>Sat Sep 5 09:25:35 2015 UTC</strong>. See <a href="http://www.araxis.com/" title="Link to the Araxis corporate web site">www.araxis.com</a> for information about Merge. This report uses XHTML and CSS2, and is best viewed with a reasonably standards compliant browser such as the latest version of <a href="http://www.mozilla.org/products/firefox/" title="Link to the Firefox page on the Mozilla website">Firefox</a> or <a href="http://www.microsoft.com/ie/" title="Link to the Microsoft website">Internet Explorer</a>. For optimum results when printing this report, use landscape orientation and enable printing of background images and colours in your browser.</p>
+<h3><strong>1. Files compared</strong></h3>
+<table class="bordered">
+<tr>
+<th>#</th>
+<th>Location</th>
+<th>File</th>
+<th>Last Modified</th>
+</tr>
+<tr>
+<td>1</td>
+<td>C:\Users\Developer\Documents\bold_for_d2006\BoldDistro\BoldForDelphi\Source</td>
+<td>BoldQueue.pas</td>
+<td>Sat Sep 5 09:16:01 2015 UTC</td>
+</tr>
+<tr>
+<td>2</td>
+<td>C:\Users\Developer\Documents\bold_for_d2006\BoldDistro\BoldForDelphi\SingleSource</td>
+<td>BoldQueue.pas</td>
+<td>Thu Dec 22 09:53:26 2005 UTC</td>
+</tr>
+</table>
+<h3><strong>2. Comparison summary</strong></h3>
+<table class="bordered">
+<tr>
+<th rowspan="2" style="vertical-align: bottom;">Description</th>
+<th colspan="2">Between<br />Files 1 and 2</th>
+</tr>
+<tr>
+<th style="text-align: right;">Text Blocks</th>
+<th style="text-align: right;">Lines</th>
+</tr>
+<tr>
+<td>Unchanged</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">454</td>
+</tr>
+<tr>
+<td>Changed</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>Inserted</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>Removed</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">38</td>
+</tr>
+</table>
+<h3><strong>3. Comparison options</strong></h3>
+<table class="bordered" style="width: 55em;">
+<tr>
+<th>Whitespace</th>
+<td>Differences in whitespace are significant</td>
+</tr>
+<tr>
+<th>Character case</th>
+<td>Differences in character case are significant</td>
+</tr>
+<tr>
+<th>Line endings</th>
+<td>Differences in line endings (<code>CR</code> and <code>LF</code> characters) are ignored</td>
+</tr>
+<tr>
+<th>CR/LF characters</th>
+<td>Not shown in the comparison detail</td>
+</tr>
+</table>
+<h3><strong>4. Active regular expressions</strong></h3>
+<p>No regular expressions were active.</p>
+<h3><strong>5. Comparison detail</strong></h3>
+<table class="mgRowGroup">
+<col style="width: 5em;" />
+<col style="width: 1em;" />
+<col width="*" />
+<col style="width: 1em;" />
+<col style="width: 5em;" />
+<col style="width: 1em;" />
+<col width="*" />
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(54 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">55</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">ApplyAllMa</span>
+<span class="U1">tching(anO</span>
+<span class="U1">bject:&nbsp;TOb</span>
+<span class="U1">ject);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">55</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">ApplyAllMa</span>
+<span class="U2">tching(anO</span>
+<span class="U2">bject:&nbsp;TOb</span>
+<span class="U2">ject);</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">56</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">DiscardCha</span>
+<span class="U1">ngeAll;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">56</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">DiscardCha</span>
+<span class="U2">ngeAll;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">57</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">DiscardCha</span>
+<span class="U1">ngeAllMatc</span>
+<span class="U1">hing(anObj</span>
+<span class="U1">ect:&nbsp;TObje</span>
+<span class="U1">ct);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">57</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">DiscardCha</span>
+<span class="U2">ngeAllMatc</span>
+<span class="U2">hing(anObj</span>
+<span class="U2">ect:&nbsp;TObje</span>
+<span class="U2">ct);</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">58</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">AddToPreDi</span>
+<span class="U1">splayQueue</span>
+<span class="U1">(Event:&nbsp;TN</span>
+<span class="U1">otifyEvent</span>
+<span class="U1">;&nbsp;Sender:&nbsp;</span>
+<span class="U1">TObject;&nbsp;R</span>
+<span class="U1">eceiver:&nbsp;T</span>
+<span class="U1">Object);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">58</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">AddToPreDi</span>
+<span class="U2">splayQueue</span>
+<span class="U2">(Event:&nbsp;TN</span>
+<span class="U2">otifyEvent</span>
+<span class="U2">;&nbsp;Sender:&nbsp;</span>
+<span class="U2">TObject;&nbsp;R</span>
+<span class="U2">eceiver:&nbsp;T</span>
+<span class="U2">Object);</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">59</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="R1">procedure&nbsp;</span>
+<span class="R1">AddToPostD</span>
+<span class="R1">isplayQueu</span>
+<span class="R1">e(Event:&nbsp;T</span>
+<span class="R1">NotifyEven</span>
+<span class="R1">t;&nbsp;Sender:</span>
+<span class="R1">&nbsp;TObject;&nbsp;</span>
+<span class="R1">Receiver:&nbsp;</span>
+<span class="R1">TObject);</span>
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">60</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">RemoveFrom</span>
+<span class="U1">PreDisplay</span>
+<span class="U1">Queue(Rece</span>
+<span class="U1">iver:&nbsp;TObj</span>
+<span class="U1">ect);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">59</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">RemoveFrom</span>
+<span class="U2">PreDisplay</span>
+<span class="U2">Queue(Rece</span>
+<span class="U2">iver:&nbsp;TObj</span>
+<span class="U2">ect);</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">61</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;class&nbsp;</span>
+<span class="R1">function&nbsp;I</span>
+<span class="R1">sDisplayQu</span>
+<span class="R1">eueEmpty:&nbsp;</span>
+<span class="R1">Boolean;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">62</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;Apply;</span>
+<span class="U1">&nbsp;virtual;&nbsp;</span>
+<span class="U1">abstract;</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">60</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;Apply;</span>
+<span class="U2">&nbsp;virtual;&nbsp;</span>
+<span class="U2">abstract;</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">63</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;Discar</span>
+<span class="U1">dChange;&nbsp;v</span>
+<span class="U1">irtual;&nbsp;ab</span>
+<span class="U1">stract;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">61</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;Discar</span>
+<span class="U2">dChange;&nbsp;v</span>
+<span class="U2">irtual;&nbsp;ab</span>
+<span class="U2">stract;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">64</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proper</span>
+<span class="U1">ty&nbsp;MatchOb</span>
+<span class="U1">ject:&nbsp;TObj</span>
+<span class="U1">ect&nbsp;read&nbsp;f</span>
+<span class="U1">MatchObjec</span>
+<span class="U1">t;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">62</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proper</span>
+<span class="U2">ty&nbsp;MatchOb</span>
+<span class="U2">ject:&nbsp;TObj</span>
+<span class="U2">ect&nbsp;read&nbsp;f</span>
+<span class="U2">MatchObjec</span>
+<span class="U2">t;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">65</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proper</span>
+<span class="U1">ty&nbsp;IsInDis</span>
+<span class="U1">playList:&nbsp;</span>
+<span class="U1">Boolean&nbsp;in</span>
+<span class="U1">dex&nbsp;befIsI</span>
+<span class="U1">nDisplayLi</span>
+<span class="U1">st&nbsp;read&nbsp;Ge</span>
+<span class="U1">tElementFl</span>
+<span class="U1">ag;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">63</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proper</span>
+<span class="U2">ty&nbsp;IsInDis</span>
+<span class="U2">playList:&nbsp;</span>
+<span class="U2">Boolean&nbsp;in</span>
+<span class="U2">dex&nbsp;befIsI</span>
+<span class="U2">nDisplayLi</span>
+<span class="U2">st&nbsp;read&nbsp;Ge</span>
+<span class="U2">tElementFl</span>
+<span class="U2">ag;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(6 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">72</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;private</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">70</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;private</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">73</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;fIsDis</span>
+<span class="U1">playing:&nbsp;B</span>
+<span class="U1">oolean;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">71</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;fIsDis</span>
+<span class="U2">playing:&nbsp;B</span>
+<span class="U2">oolean;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">74</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;fDispl</span>
+<span class="U1">ayMode:&nbsp;TB</span>
+<span class="U1">oldQueueDi</span>
+<span class="U1">splayMode;</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">72</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;fDispl</span>
+<span class="U2">ayMode:&nbsp;TB</span>
+<span class="U2">oldQueueDi</span>
+<span class="U2">splayMode;</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">75</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;fPreDi</span>
+<span class="U1">splayQueue</span>
+<span class="U1">:&nbsp;TBoldEve</span>
+<span class="U1">ntQueue;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">73</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;fPreDi</span>
+<span class="U2">splayQueue</span>
+<span class="U2">:&nbsp;TBoldEve</span>
+<span class="U2">ntQueue;</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">76</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;fPostD</span>
+<span class="R1">isplayQueu</span>
+<span class="R1">e:&nbsp;TBoldEv</span>
+<span class="R1">entQueue;</span>
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">77</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;fDispl</span>
+<span class="U1">ayList:&nbsp;TL</span>
+<span class="U1">ist;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">74</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;fDispl</span>
+<span class="U2">ayList:&nbsp;TL</span>
+<span class="U2">ist;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">78</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;fApply</span>
+<span class="U1">List:&nbsp;TLis</span>
+<span class="U1">t;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">75</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;fApply</span>
+<span class="U2">List:&nbsp;TLis</span>
+<span class="U2">t;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">79</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;protecte</span>
+<span class="U1">d</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">76</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;protecte</span>
+<span class="U2">d</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">80</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;functi</span>
+<span class="U1">on&nbsp;Display</span>
+<span class="U1">One:&nbsp;Boole</span>
+<span class="U1">an;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">77</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;functi</span>
+<span class="U2">on&nbsp;Display</span>
+<span class="U2">One:&nbsp;Boole</span>
+<span class="U2">an;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(6 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">87</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;public</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">84</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;public</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">88</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;constr</span>
+<span class="U1">uctor&nbsp;Crea</span>
+<span class="U1">te;&nbsp;virtua</span>
+<span class="U1">l;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">85</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;constr</span>
+<span class="U2">uctor&nbsp;Crea</span>
+<span class="U2">te;&nbsp;virtua</span>
+<span class="U2">l;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">89</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;destru</span>
+<span class="U1">ctor&nbsp;Destr</span>
+<span class="U1">oy;&nbsp;overri</span>
+<span class="U1">de;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">86</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;destru</span>
+<span class="U2">ctor&nbsp;Destr</span>
+<span class="U2">oy;&nbsp;overri</span>
+<span class="U2">de;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">90</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;AddEve</span>
+<span class="U1">ntToPredis</span>
+<span class="U1">playQueue(</span>
+<span class="U1">Event:&nbsp;TNo</span>
+<span class="U1">tifyEvent;</span>
+<span class="U1">&nbsp;Sender:&nbsp;T</span>
+<span class="U1">Object;&nbsp;Re</span>
+<span class="U1">ceiver:&nbsp;TO</span>
+<span class="U1">bject);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">87</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;AddEve</span>
+<span class="U2">ntToPredis</span>
+<span class="U2">playQueue(</span>
+<span class="U2">Event:&nbsp;TNo</span>
+<span class="U2">tifyEvent;</span>
+<span class="U2">&nbsp;Sender:&nbsp;T</span>
+<span class="U2">Object;&nbsp;Re</span>
+<span class="U2">ceiver:&nbsp;TO</span>
+<span class="U2">bject);</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">91</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="R1">ure&nbsp;AddEve</span>
+<span class="R1">ntToPostDi</span>
+<span class="R1">splayQueue</span>
+<span class="R1">(Event:&nbsp;TN</span>
+<span class="R1">otifyEvent</span>
+<span class="R1">;&nbsp;Sender:&nbsp;</span>
+<span class="R1">TObject;&nbsp;R</span>
+<span class="R1">eceiver:&nbsp;T</span>
+<span class="R1">Object);</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">92</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;Remove</span>
+<span class="U1">FromPreDis</span>
+<span class="U1">playQueue(</span>
+<span class="U1">Receiver:&nbsp;</span>
+<span class="U1">TObject);</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">88</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;Remove</span>
+<span class="U2">FromPreDis</span>
+<span class="U2">playQueue(</span>
+<span class="U2">Receiver:&nbsp;</span>
+<span class="U2">TObject);</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">93</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="R1">ure&nbsp;Remove</span>
+<span class="R1">FromPostDi</span>
+<span class="R1">splayQueue</span>
+<span class="R1">(Receiver:</span>
+<span class="R1">&nbsp;TObject);</span>
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">94</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;Perfor</span>
+<span class="U1">mPreDispla</span>
+<span class="U1">yQueue;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">89</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;Perfor</span>
+<span class="U2">mPreDispla</span>
+<span class="U2">yQueue;</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">95</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="R1">ure&nbsp;Perfor</span>
+<span class="R1">mPostDispl</span>
+<span class="R1">ayQueue;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">96</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;DeActi</span>
+<span class="U1">vateDispla</span>
+<span class="U1">yQueue;&nbsp;vi</span>
+<span class="U1">rtual;&nbsp;abs</span>
+<span class="U1">tract;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">90</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;DeActi</span>
+<span class="U2">vateDispla</span>
+<span class="U2">yQueue;&nbsp;vi</span>
+<span class="U2">rtual;&nbsp;abs</span>
+<span class="U2">tract;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">97</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U1">ure&nbsp;Activa</span>
+<span class="U1">teDisplayQ</span>
+<span class="U1">ueue;&nbsp;virt</span>
+<span class="U1">ual;&nbsp;abstr</span>
+<span class="U1">act;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">91</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proced</span>
+<span class="U2">ure&nbsp;Activa</span>
+<span class="U2">teDisplayQ</span>
+<span class="U2">ueue;&nbsp;virt</span>
+<span class="U2">ual;&nbsp;abstr</span>
+<span class="U2">act;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">98</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;proper</span>
+<span class="U1">ty&nbsp;Display</span>
+<span class="U1">Mode:&nbsp;TBol</span>
+<span class="U1">dQueueDisp</span>
+<span class="U1">layMode&nbsp;re</span>
+<span class="U1">ad&nbsp;fDispla</span>
+<span class="U1">yMode&nbsp;writ</span>
+<span class="U1">e&nbsp;fDisplay</span>
+<span class="U1">Mode;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">92</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;proper</span>
+<span class="U2">ty&nbsp;Display</span>
+<span class="U2">Mode:&nbsp;TBol</span>
+<span class="U2">dQueueDisp</span>
+<span class="U2">layMode&nbsp;re</span>
+<span class="U2">ad&nbsp;fDispla</span>
+<span class="U2">yMode&nbsp;writ</span>
+<span class="U2">e&nbsp;fDisplay</span>
+<span class="U2">Mode;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">99</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">93</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(116 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">216</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;</span>
+<span class="U1">DisplayOne</span>
+<span class="U1">&nbsp;do</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">210</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;while&nbsp;</span>
+<span class="U2">DisplayOne</span>
+<span class="U2">&nbsp;do</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">217</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{not</span>
+<span class="U1">hing};</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">211</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{not</span>
+<span class="U2">hing};</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">218</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">212</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">219</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">213</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">220</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">class&nbsp;func</span>
+<span class="R1">tion&nbsp;TBold</span>
+<span class="R1">Queueable.</span>
+<span class="R1">IsDisplayQ</span>
+<span class="R1">ueueEmpty:</span>
+<span class="R1">&nbsp;Boolean;</span>
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">221</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">222</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;Result&nbsp;:</span>
+<span class="R1">=&nbsp;(BoldIns</span>
+<span class="R1">talledQueu</span>
+<span class="R1">e&nbsp;=&nbsp;nil)&nbsp;o</span>
+<span class="R1">r&nbsp;(BoldIns</span>
+<span class="R1">talledQueu</span>
+<span class="R1">e.fDisplay</span>
+<span class="R1">List.Count</span>
+<span class="R1">&nbsp;=&nbsp;0);</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">223</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">224</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">225</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">226</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">class&nbsp;proc</span>
+<span class="U1">edure&nbsp;TBol</span>
+<span class="U1">dQueueable</span>
+<span class="U1">.ApplyAll;</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">214</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">class&nbsp;proc</span>
+<span class="U2">edure&nbsp;TBol</span>
+<span class="U2">dQueueable</span>
+<span class="U2">.ApplyAll;</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">227</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">var</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">215</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">var</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">228</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;Queueabl</span>
+<span class="U1">e:&nbsp;TBoldQu</span>
+<span class="U1">eueable;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">216</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;Queueabl</span>
+<span class="U2">e:&nbsp;TBoldQu</span>
+<span class="U2">eueable;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">229</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;tempList</span>
+<span class="U1">:&nbsp;TList;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">217</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;tempList</span>
+<span class="U2">:&nbsp;TList;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(67 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">297</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Qu</span>
+<span class="U1">eueable.Di</span>
+<span class="U1">scardChang</span>
+<span class="U1">e;&nbsp;//&nbsp;This</span>
+<span class="U1">&nbsp;will&nbsp;remo</span>
+<span class="U1">ve&nbsp;from&nbsp;li</span>
+<span class="U1">st</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">285</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Qu</span>
+<span class="U2">eueable.Di</span>
+<span class="U2">scardChang</span>
+<span class="U2">e;&nbsp;//&nbsp;This</span>
+<span class="U2">&nbsp;will&nbsp;remo</span>
+<span class="U2">ve&nbsp;from&nbsp;li</span>
+<span class="U2">st</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">298</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">286</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">299</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">287</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">300</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">288</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">301</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">class&nbsp;proc</span>
+<span class="R1">edure&nbsp;TBol</span>
+<span class="R1">dQueueable</span>
+<span class="R1">.AddToPost</span>
+<span class="R1">DisplayQue</span>
+<span class="R1">ue(Event:&nbsp;</span>
+<span class="R1">TNotifyEve</span>
+<span class="R1">nt;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">302</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;Sender,&nbsp;</span>
+<span class="R1">Receiver:&nbsp;</span>
+<span class="R1">TObject);</span>
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">303</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">304</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;if&nbsp;not&nbsp;B</span>
+<span class="R1">oldQueueFi</span>
+<span class="R1">nalized&nbsp;th</span>
+<span class="R1">en</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">305</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;&nbsp;&nbsp;BoldIn</span>
+<span class="R1">stalledQue</span>
+<span class="R1">ue.AddEven</span>
+<span class="R1">tToPostDis</span>
+<span class="R1">playQueue(</span>
+<span class="R1">Event,&nbsp;Sen</span>
+<span class="R1">der,&nbsp;Recei</span>
+<span class="R1">ver);</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">306</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">307</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">308</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">class&nbsp;proc</span>
+<span class="U1">edure&nbsp;TBol</span>
+<span class="U1">dQueueable</span>
+<span class="U1">.AddToPreD</span>
+<span class="U1">isplayQueu</span>
+<span class="U1">e(Event:&nbsp;T</span>
+<span class="U1">NotifyEven</span>
+<span class="U1">t;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">289</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">class&nbsp;proc</span>
+<span class="U2">edure&nbsp;TBol</span>
+<span class="U2">dQueueable</span>
+<span class="U2">.AddToPreD</span>
+<span class="U2">isplayQueu</span>
+<span class="U2">e(Event:&nbsp;T</span>
+<span class="U2">NotifyEven</span>
+<span class="U2">t;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">309</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;Sender,&nbsp;</span>
+<span class="U1">Receiver:&nbsp;</span>
+<span class="U1">TObject);</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">290</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;Sender,&nbsp;</span>
+<span class="U2">Receiver:&nbsp;</span>
+<span class="U2">TObject);</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">310</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">291</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">begin</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">311</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;if&nbsp;not&nbsp;B</span>
+<span class="U1">oldQueueFi</span>
+<span class="U1">nalized&nbsp;th</span>
+<span class="U1">en</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">292</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;if&nbsp;not&nbsp;B</span>
+<span class="U2">oldQueueFi</span>
+<span class="U2">nalized&nbsp;th</span>
+<span class="U2">en</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(7 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">319</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">300</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">320</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">301</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">321</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">{&nbsp;TBoldQue</span>
+<span class="U1">ue&nbsp;}</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">302</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">{&nbsp;TBoldQue</span>
+<span class="U2">ue&nbsp;}</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">322</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">303</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">323</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">procedure&nbsp;</span>
+<span class="R1">TBoldQueue</span>
+<span class="R1">.AddEventT</span>
+<span class="R1">oPostDispl</span>
+<span class="R1">ayQueue(Ev</span>
+<span class="R1">ent:&nbsp;TNoti</span>
+<span class="R1">fyEvent;&nbsp;S</span>
+<span class="R1">ender,</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">324</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;Receiver</span>
+<span class="R1">:&nbsp;TObject)</span>
+<span class="R1">;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">325</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">326</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;fPostDis</span>
+<span class="R1">playQueue.</span>
+<span class="R1">Add(Event,</span>
+<span class="R1">&nbsp;Sender,&nbsp;R</span>
+<span class="R1">eceiver);</span>
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">327</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;EnsureDe</span>
+<span class="R1">queing;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">328</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">329</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">330</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">TBoldQueue</span>
+<span class="U1">.AddEventT</span>
+<span class="U1">oPredispla</span>
+<span class="U1">yQueue(Eve</span>
+<span class="U1">nt:&nbsp;TNotif</span>
+<span class="U1">yEvent;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">304</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">TBoldQueue</span>
+<span class="U2">.AddEventT</span>
+<span class="U2">oPredispla</span>
+<span class="U2">yQueue(Eve</span>
+<span class="U2">nt:&nbsp;TNotif</span>
+<span class="U2">yEvent;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">331</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;Sender,&nbsp;</span>
+<span class="U1">Receiver:&nbsp;</span>
+<span class="U1">TObject);</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">305</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;Sender,&nbsp;</span>
+<span class="U2">Receiver:&nbsp;</span>
+<span class="U2">TObject);</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">332</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">306</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">begin</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">333</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;fPreDisp</span>
+<span class="U1">layQueue.A</span>
+<span class="U1">dd(Event,&nbsp;</span>
+<span class="U1">Sender,&nbsp;Re</span>
+<span class="U1">ceiver);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">307</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;fPreDisp</span>
+<span class="U2">layQueue.A</span>
+<span class="U2">dd(Event,&nbsp;</span>
+<span class="U2">Sender,&nbsp;Re</span>
+<span class="U2">ceiver);</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(14 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">348</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">constructo</span>
+<span class="U1">r&nbsp;TBoldQue</span>
+<span class="U1">ue.Create;</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">322</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">constructo</span>
+<span class="U2">r&nbsp;TBoldQue</span>
+<span class="U2">ue.Create;</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">349</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">323</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">begin</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">350</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;inherite</span>
+<span class="U1">d;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">324</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;inherite</span>
+<span class="U2">d;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">351</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;fPreDisp</span>
+<span class="U1">layQueue&nbsp;:</span>
+<span class="U1">=&nbsp;TBoldEve</span>
+<span class="U1">ntQueue.Cr</span>
+<span class="U1">eate;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">325</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;fPreDisp</span>
+<span class="U2">layQueue&nbsp;:</span>
+<span class="U2">=&nbsp;TBoldEve</span>
+<span class="U2">ntQueue.Cr</span>
+<span class="U2">eate;</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">352</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;fPostDis</span>
+<span class="R1">playQueue&nbsp;</span>
+<span class="R1">:=&nbsp;TBoldEv</span>
+<span class="R1">entQueue.C</span>
+<span class="R1">reate;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">353</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;fDisplay</span>
+<span class="U1">List&nbsp;:=&nbsp;TL</span>
+<span class="U1">ist.Create</span>
+<span class="U1">;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">326</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;fDisplay</span>
+<span class="U2">List&nbsp;:=&nbsp;TL</span>
+<span class="U2">ist.Create</span>
+<span class="U2">;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">354</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;fApplyLi</span>
+<span class="U1">st&nbsp;:=&nbsp;TLis</span>
+<span class="U1">t.Create;</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">327</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;fApplyLi</span>
+<span class="U2">st&nbsp;:=&nbsp;TLis</span>
+<span class="U2">t.Create;</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">355</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;if&nbsp;BoldR</span>
+<span class="U1">unningAsDe</span>
+<span class="U1">signTimePa</span>
+<span class="U1">ckage&nbsp;then</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">328</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;if&nbsp;BoldR</span>
+<span class="U2">unningAsDe</span>
+<span class="U2">signTimePa</span>
+<span class="U2">ckage&nbsp;then</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">356</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;Displa</span>
+<span class="U1">yMode&nbsp;:=&nbsp;d</span>
+<span class="U1">mDisplayAl</span>
+<span class="U1">l</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">329</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;Displa</span>
+<span class="U2">yMode&nbsp;:=&nbsp;d</span>
+<span class="U2">mDisplayAl</span>
+<span class="U2">l</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(6 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">363</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">336</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">begin</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">364</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;FreeAndN</span>
+<span class="U1">il(fDispla</span>
+<span class="U1">yList);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">337</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;FreeAndN</span>
+<span class="U2">il(fDispla</span>
+<span class="U2">yList);</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">365</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;FreeAndN</span>
+<span class="U1">il(fApplyL</span>
+<span class="U1">ist);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">338</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;FreeAndN</span>
+<span class="U2">il(fApplyL</span>
+<span class="U2">ist);</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">366</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;FreeAndN</span>
+<span class="U1">il(fPreDis</span>
+<span class="U1">playQueue)</span>
+<span class="U1">;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">339</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;FreeAndN</span>
+<span class="U2">il(fPreDis</span>
+<span class="U2">playQueue)</span>
+<span class="U2">;</span>
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">367</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;FreeAndN</span>
+<span class="R1">il(fPostDi</span>
+<span class="R1">splayQueue</span>
+<span class="R1">);</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">368</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;inherite</span>
+<span class="U1">d;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">340</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;inherite</span>
+<span class="U2">d;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">369</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">341</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">370</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">342</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">371</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">function&nbsp;T</span>
+<span class="U1">BoldQueue.</span>
+<span class="U1">DisplayAll</span>
+<span class="U1">:&nbsp;Boolean;</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">343</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">function&nbsp;T</span>
+<span class="U2">BoldQueue.</span>
+<span class="U2">DisplayAll</span>
+<span class="U2">:&nbsp;Boolean;</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(85 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">457</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;else</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">429</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;else</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">458</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fApp</span>
+<span class="U1">lyList[Ind</span>
+<span class="U1">ex]&nbsp;:=&nbsp;nil</span>
+<span class="U1">;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">430</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fApp</span>
+<span class="U2">lyList[Ind</span>
+<span class="U2">ex]&nbsp;:=&nbsp;nil</span>
+<span class="U2">;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">459</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">431</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">460</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">432</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">461</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">procedure&nbsp;</span>
+<span class="R1">TBoldQueue</span>
+<span class="R1">.PerformPo</span>
+<span class="R1">stDisplayQ</span>
+<span class="R1">ueue;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">462</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">463</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;fPostDis</span>
+<span class="R1">playQueue.</span>
+<span class="R1">DequeueAll</span>
+<span class="R1">;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">464</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">465</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">466</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">TBoldQueue</span>
+<span class="U1">.RemoveFro</span>
+<span class="U1">mDisplayLi</span>
+<span class="U1">st(Queueab</span>
+<span class="U1">le:&nbsp;TBoldQ</span>
+<span class="U1">ueueable);</span>
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">433</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">TBoldQueue</span>
+<span class="U2">.RemoveFro</span>
+<span class="U2">mDisplayLi</span>
+<span class="U2">st(Queueab</span>
+<span class="U2">le:&nbsp;TBoldQ</span>
+<span class="U2">ueueable);</span>
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">467</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">var</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">434</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">var</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">468</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;index:&nbsp;i</span>
+<span class="U1">nteger;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">435</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;index:&nbsp;i</span>
+<span class="U2">nteger;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">469</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">436</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">begin</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(8 unchanged lines omitted)</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">478</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;else</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">445</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;else</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">479</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fdis</span>
+<span class="U1">playList[I</span>
+<span class="U1">ndex]&nbsp;:=&nbsp;n</span>
+<span class="U1">il;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">446</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fdis</span>
+<span class="U2">playList[I</span>
+<span class="U2">ndex]&nbsp;:=&nbsp;n</span>
+<span class="U2">il;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">480</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">447</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">481</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1" />
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">448</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2" />
+</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">482</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">procedure&nbsp;</span>
+<span class="R1">TBoldQueue</span>
+<span class="R1">.RemoveFro</span>
+<span class="R1">mPostDispl</span>
+<span class="R1">ayQueue(Re</span>
+<span class="R1">ceiver:&nbsp;TO</span>
+<span class="R1">bject);</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">483</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">484</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">&nbsp;&nbsp;fPostDis</span>
+<span class="R1">playQueue.</span>
+<span class="R1">RemoveAllF</span>
+<span class="R1">orReceiver</span>
+<span class="R1">(Receiver)</span>
+<span class="R1">;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">485</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="R1" style="text-align: right;">486</td>
+<td class="R1" style="text-decoration: none;">&nbsp;</td>
+<td class="R1">
+<span class="R1" />
+</td>
+<td>&nbsp;</td>
+<td colspan="3" style="background-color: #f5f5f5;">&nbsp;</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">487</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">procedure&nbsp;</span>
+<span class="U1">TBoldQueue</span>
+<span class="U1">.RemoveFro</span>
+<span class="U1">mPreDispla</span>
+<span class="U1">yQueue(Rec</span>
+<span class="U1">eiver:&nbsp;TOb</span>
+<span class="U1">ject);</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">449</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">procedure&nbsp;</span>
+<span class="U2">TBoldQueue</span>
+<span class="U2">.RemoveFro</span>
+<span class="U2">mPreDispla</span>
+<span class="U2">yQueue(Rec</span>
+<span class="U2">eiver:&nbsp;TOb</span>
+<span class="U2">ject);</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">488</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">begin</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">450</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">begin</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">489</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">&nbsp;&nbsp;&nbsp;fPreDis</span>
+<span class="U1">playQueue.</span>
+<span class="U1">RemoveAllF</span>
+<span class="U1">orReceiver</span>
+<span class="U1">(Receiver)</span>
+<span class="U1">;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">451</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">&nbsp;&nbsp;&nbsp;fPreDis</span>
+<span class="U2">playQueue.</span>
+<span class="U2">RemoveAllF</span>
+<span class="U2">orReceiver</span>
+<span class="U2">(Receiver)</span>
+<span class="U2">;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" style="text-align: right;">490</td>
+<td class="U1" style="text-decoration: none;">&nbsp;</td>
+<td class="U1">
+<span class="U1">end;</span>
+</td>
+<td>&nbsp;</td>
+<td class="U2" style="text-align: right;">452</td>
+<td class="U2" style="text-decoration: none;">&nbsp;</td>
+<td class="U2">
+<span class="U2">end;</span>
+</td>
+</tr>
+<tr>
+<td class="U1" colspan="7" style="background-color: #f5f5f5; vertical-align: middle; text-align: center; border-bottom: dashed 1px #a0a0a0; border-top: dashed 1px #a0a0a0;">(2 unchanged lines omitted)</td>
+</tr>
+</table>
+<p class="copyright" style="margin-top: 25px; padding-top: 2px; border-top: solid #a0a0a0 1px; max-width: none;">Araxis Merge (but not the data content of this report) is Copyright  &copy; 1993-2006 Araxis Ltd (<a href="http://www.araxis.com/" title="Link to the Araxis corporate web site">www.araxis.com</a>). All rights reserved.</p>
+</body>
+</html>

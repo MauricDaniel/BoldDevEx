@@ -1,0 +1,61 @@
+package BoldDevEx;
+
+{$R *.res}
+{$R 'Source\cxBoldRegUnit.dcr'}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'BoldAware DevEx Controls'}
+{$DESIGNONLY}
+{$IMPLICITBUILD OFF}
+{$DEFINE BOLD_DELPHI}
+{$DEFINE DESIGNONLY}
+{$DEFINE DEBUG}
+
+requires
+  rtl,
+  designide,
+  vcljpg,
+  dbrtl,
+  vcldb,
+  Bold,
+  BoldVCLGui,
+  dclcxEditorsRS11,
+  cxGridRS11,
+  cxBarEditItemRS11;
+
+contains
+  cxBoldRegUnit in 'Source\cxBoldRegUnit.pas',
+  cxBoldEditors in 'Source\cxBoldEditors.pas',
+  cxGridBoldSupportUnit in 'Source\cxGridBoldSupportUnit.pas',
+  BoldVariantControlPack in 'Source\BoldVariantControlPack.pas',
+  cxBoldExtLookupComboBox in 'Source\cxBoldExtLookupComboBox.pas',
+  cxBoldLookupComboBox in 'Source\cxBoldLookupComboBox.pas',
+  cxBoldLookupEdit in 'Source\cxBoldLookupEdit.pas',
+  cxLookupBoldGrid in 'Source\cxLookupBoldGrid.pas',
+  dxBarBoldNav in 'Source\dxBarBoldNav.pas',
+  cxBoldEditConsts in 'Source\cxBoldEditConsts.pas',
+  cxBoldEditRepositoryItems in 'Source\cxBoldEditRepositoryItems.pas',
+  BoldToCxConverterUnit in 'Source\BoldToCxConverterUnit.pas',
+  BoldToCxGridConverterUnit in 'Source\BoldToCxGridConverterUnit.pas',
+  BoldToCxConverterForm in 'Source\BoldToCxConverterForm.pas';
+
+end.

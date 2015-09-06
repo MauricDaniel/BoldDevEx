@@ -17,16 +17,16 @@ Installation
 Tested in Delphi 2007. Might work, but not tested in Delphi 7.
 Works with latest official release Bold for Delphi 2006.
 
-1. Patching Bold source code. (see docs\BoldEnvironmentVCL.pas.html and docs\BoldQueue.pas.html)
+- Patching Bold source code. (see docs\BoldEnvironmentVCL.pas.html and docs\BoldQueue.pas.html)
 
 BoldDevEx requires small changes in Bold source. It is necessary to apply these changes for BoldDevEx.dpk to compile.
-Bold design package also needs te be recompiled.
+Bold design package also needs to be recompiled.
 
-2. Patching DevEx source (see docs\cxGridCustomTableView.pas.html)
+- Patching DevEx source (see docs\cxGridCustomTableView.pas.html)
 
-There is a change in DevEx source which is optional. It marks GetFilterValues virtual allowing override to efficiently prefetch value for the filtered column. If you decide to patch this file please include DevExChanges conditional define in Project Options.
+There is a change in DevEx source which is optional. It marks GetFilterValues virtual allowing override to efficiently prefetch value for the filtered column. If you decide to patch this file please include DevExChanges conditional define in Project Options. DevEx packages do not need to be recompiled.
 
-3. Build and install BoldDevEx.dpk
+- Build and install BoldDevEx.dpk
 
 BoldDevEx.dpk package needs to be installed in IDE.
 

@@ -39,4 +39,4 @@ Grid views are avaliable for selection when creating new grid views.
 
 Converting existing forms to use BoldDevEx controls
 
-There are alsotwo converter components available which help convert forms with standard Bold controls into BoldDevEx versions. To use it, drop TBoldToCxConverter or TBoldToCxGridConverter on a form and a conversion dialog will appear. Finally delete the converter component.
+There are two converter components available which help convert forms with standard Bold controls into BoldDevEx versions. To use it, drop TBoldToCxConverter or TBoldToCxGridConverter on a form and a conversion dialog will appear. Finally delete the converter component.

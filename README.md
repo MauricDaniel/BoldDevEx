@@ -14,10 +14,10 @@ All contols implement IBoldValidateableComponent which means they can be validat
 
 Instalation
 
-1. Patching Bold source code. (see docs\BoldEnvironmentVCL.pas.html)
+1. Patching Bold source code. (see docs\BoldEnvironmentVCL.pas.html and docs\BoldQueue.pas.html)
 
 BoldDevEx requires small changes in Bold source. It is neccesary to apply these changes for BoldDevEx.dpk to compile.
-Bold design package also needs te be recompiled. 
+Bold design package also needs te be recompiled.
 
 2. Patching DevEx source (see docs\cxGridCustomTableView.pas.html)
 

@@ -14,6 +14,9 @@ All contols implement IBoldValidateableComponent which means they can be validat
 
 Instalation
 
+Tested in Delphi 2007. Might work, but not tested in Delphi 7.
+Works with latest official release Bold for Delphi 2006.
+
 1. Patching Bold source code. (see docs\BoldEnvironmentVCL.pas.html and docs\BoldQueue.pas.html)
 
 BoldDevEx requires small changes in Bold source. It is neccesary to apply these changes for BoldDevEx.dpk to compile.
@@ -26,3 +29,14 @@ There is a change in DevEx source which is optional. It marks GetFilterValues vi
 3. Build and install BoldDevEx.dpk
 
 BoldDevEx.dpk package needs to be installed in IDE.
+
+
+Usage
+
+Controls are available via 'Express BoldEditors' component tab in IDE.
+Grid views are avaliable for selection when creating new grid views.
+
+
+Converting existing forms to use BoldDevEx controls
+
+There are alsotwo converter components available which help convert forms with standard Bold controls into BoldDevEx versions. To use it, drop TBoldToCxConverter or TBoldToCxGridConverter on a form and a conversion dialog will appear. Finally delete the converter component.

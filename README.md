@@ -10,16 +10,16 @@ Also the following Bold aware Grid views are available:
   
 Please note that Layout view is declared but not implemented. Card view is implemented but not tested much.
 
-All contols implement IBoldValidateableComponent which means they can be validated at design time via Bold menu/Validate Current Form
+All controls implement IBoldValidateableComponent which means they can be validated at design time via Bold menu/Validate Current Form
 
-Instalation
+Installation
 
 Tested in Delphi 2007. Might work, but not tested in Delphi 7.
 Works with latest official release Bold for Delphi 2006.
 
 1. Patching Bold source code. (see docs\BoldEnvironmentVCL.pas.html and docs\BoldQueue.pas.html)
 
-BoldDevEx requires small changes in Bold source. It is neccesary to apply these changes for BoldDevEx.dpk to compile.
+BoldDevEx requires small changes in Bold source. It is necessary to apply these changes for BoldDevEx.dpk to compile.
 Bold design package also needs te be recompiled.
 
 2. Patching DevEx source (see docs\cxGridCustomTableView.pas.html)
@@ -34,7 +34,7 @@ BoldDevEx.dpk package needs to be installed in IDE.
 Usage
 
 Controls are available via 'Express BoldEditors' component tab in IDE.
-Grid views are avaliable for selection when creating new grid views.
+Grid views are available for selection when creating new grid views.
 
 
 Converting existing forms to use BoldDevEx controls

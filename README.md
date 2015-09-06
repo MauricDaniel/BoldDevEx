@@ -1,16 +1,16 @@
 # BoldDevEx
-* **Bold-aware** DevEx controls
+**Bold-aware DevEx controls**
 
-'Express BoldEditors' component tab in IDE contains:
+**'Express BoldEditors'** component tab in IDE contains:
 
 TcxBoldTextEdit, TcxBoldDateEdit, TcxBoldTimeEdit, TcxBoldMemo, TcxBoldCurrencyEdit, TcxBoldMaskEdit, TcxBoldCheckBox, TcxBoldComboBox, TcxBoldSpinEdit, TcxBoldButtonEdit, TcxBoldHyperLinkEdit, TcxBoldProgressBar, TcxBoldLabel, TcxBoldImage, TcxBoldRichEdit, TcxBoldListBox, TcxBoldCheckListBox, TcxBoldSelectionCheckListBox, TcxBoldListView, TcxBoldExtLookupComboBox, TcxBoldLookupComboBox, TcxBoldNBLookupComboBox, TcxBoldNBExtLookupComboBox, TdxBarBoldNavigator.
 
-Also the following Bold aware Grid views are available:
+Also the following Bold aware **Grid views** are available:
   TcxGridBoldTableView, TcxGridBoldBandedTableView, TcxGridBoldCardView, TcxGridBoldLayoutView.
   
 Please note that Layout view is declared but not implemented. Card view is implemented but not tested much.
 
-All controls implement **IBoldValidateableComponent** which means they can be validated at design time via Bold menu/Validate Current Form
+All controls implement **IBoldValidateableComponent** which means they can be validated at design time via **Bold menu/Validate Current Form**
 
 ## Installation
 

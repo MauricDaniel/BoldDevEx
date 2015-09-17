@@ -1,7 +1,10 @@
 # BoldDevEx
 **Bold-aware DevEx controls**
 
-**'Express BoldEditors'** component tab in IDE contains:
+This component suite make VCL Devepress 14.2.3 components Bold-aware.
+Version 15 or more is not supported as it it dropped non unicode Delphi.
+
+**Express BoldEditors** component tab in IDE contains:
 
 TcxBoldTextEdit, TcxBoldDateEdit, TcxBoldTimeEdit, TcxBoldMemo, TcxBoldCurrencyEdit, TcxBoldMaskEdit, TcxBoldCheckBox, TcxBoldComboBox, TcxBoldSpinEdit, TcxBoldButtonEdit, TcxBoldHyperLinkEdit, TcxBoldProgressBar, TcxBoldLabel, TcxBoldImage, TcxBoldRichEdit, TcxBoldListBox, TcxBoldCheckListBox, TcxBoldSelectionCheckListBox, TcxBoldListView, TcxBoldExtLookupComboBox, TcxBoldLookupComboBox, TcxBoldNBLookupComboBox, TcxBoldNBExtLookupComboBox, TdxBarBoldNavigator.
 
@@ -13,6 +16,9 @@ Please note that Layout view is declared but not implemented. Card view is imple
 All controls implement **IBoldValidateableComponent** which means they can be validated at design time via **Bold menu/Validate Current Form**
 
 ## Installation
+
+Install [VCL Devexpress 14.2.3] (https://www.devexpress.com/Products/VCL/)
+Install [Bold D2006] (http://codecentral.embarcadero.com/Item/23890)
 
 Tested in Delphi 2007. Might work, but not tested in Delphi 7.
 Works with latest official release Bold for Delphi 2006.

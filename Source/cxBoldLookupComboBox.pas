@@ -112,6 +112,7 @@ type
     property ImmediateDropDown;
 //    property ImmediatePost;
     property IncrementalFiltering;
+    property IncrementalFilteringOptions;
 //    property KeyFieldNames;
     property ListColumns: TcxLookupBoldGridColumns read GetListColumns write SetListColumns;
 //    property ListFieldNames;
@@ -510,7 +511,6 @@ var
   lSelectedElement: TBoldElement;
 begin
 //  inherited;
-//  Assert(aEdit is TcxCustomComboBox, 'TcxBoldLookupComboBoxProperties.SetStoredValue: aEdit is not TcxCustomComboBox;' + aEdit.classname);
 
 //  if TcxCustomComboBox(aEdit).ILookupData.CurrentKey <> null then
   if (not VarIsNull(aValue)) and (aValue <> -1) then
@@ -518,7 +518,7 @@ begin
     lItemIndex := aValue; //(aEdit as TcxCustomComboBox).ItemIndex;
     lSelectedElement := DataController.BoldHandle.List[lItemIndex]; //(DataController.Follower.Element as TBoldList)[lItemIndex];
 
-    InternalComboSetValue(aBoldHandle, aFollower, lSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, BoldLookupListHandle);
+    InternalComboSetValue(aBoldHandle, aFollower, lSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, BoldLookupListHandle, AValue);
   //  aEdit.EditModified := false
   end;
   aDone := true;

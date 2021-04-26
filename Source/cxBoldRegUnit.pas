@@ -2,6 +2,8 @@ unit cxBoldRegUnit;
 
 {$I cxVer.inc}
 
+//  v2.03 - 25 Jan 2011  2007-2011 Daniel Mauric
+
 {$ASSERTIONS ON}
 
 interface
@@ -14,6 +16,7 @@ uses
   Classes, SysUtils,{$IFDEF DELPHI6} DesignIntf, DesignEditors,{$ELSE} DsgnIntf,{$ENDIF}
   cxEditRepositoryEditor,
   cxEditRepositoryItems,
+//  cxEditConsts,
   cxEdit,
   cxBoldEditors,
   dxBarBoldNav,
@@ -24,12 +27,17 @@ uses
   BoldElements,
   BoldDefs,
   BoldHandles,
+//  BoldDataBindingUnit,
+//  BoldDataBindingTestUnit,
   BoldAbstractPropertyEditors,
+
   Dialogs,
   cxDropDownEdit,
   cxGridBoldSupportUnit,
+
   cxGridCustomView,
   cxGridCustomTableView,
+
   cxBoldExtLookupComboBox,
   cxBoldLookupComboBox,
   cxBoldLookupEdit;
@@ -256,6 +264,8 @@ begin
   result := nil;
   if Component is TcxBoldComboBoxProperties then
   begin
+//    ShowMessage(lcxBoldComboBoxProperties.GetContainerClass.ClassName);
+//    ShowMessage(lcxBoldComboBoxProperties.Owner.ClassName);
     lcxBoldComboBoxProperties := Component as TcxBoldComboBoxProperties;
     if (lcxBoldComboBoxProperties.Owner is TcxCustomGridTableItem) and lcxBoldComboBoxProperties.Owner.GetInterface(IBoldAwareViewItem, lBoldAwareViewItem) then
     begin
@@ -277,6 +287,9 @@ begin
     end
     else
       raise Exception.Create('Unknown context: ' + lcxBoldComboBoxProperties.Owner.ClassName );
+{      if Assigned(lcxBoldComboBoxProperties.BoldLookupListHandle) then
+        result := lcxBoldComboBoxProperties.BoldLookupListHandle.StaticBoldType;
+}
   end
   else
   if component is TcxCustomBoldLookupEditProperties then

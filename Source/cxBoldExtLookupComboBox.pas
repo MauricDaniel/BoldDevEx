@@ -163,6 +163,7 @@ type
     property ImmediateDropDown;
 //    property ImmediatePost;
     property IncrementalFiltering;
+    property IncrementalFilteringOptions;
     property View: TcxCustomGridTableView read FView write SetView; // before
 //    property KeyFieldNames;
     property ListFieldItem: TcxCustomGridTableItem read GetListFieldItem write SetListFieldItem;
@@ -309,9 +310,10 @@ type
 implementation
 
 uses
-   cxGridFilterHelpers,
-   BoldSystem,
-   cxDropDownEdit;
+  Types,
+  cxGridFilterHelpers,
+  BoldSystem,
+  cxDropDownEdit;
 
 type
   TcxCustomGridTableOptionsBehaviorAccess = class(TcxCustomGridTableOptionsBehavior);
@@ -908,7 +910,7 @@ begin
     lItemIndex := aValue; //TcxCustomComboBox(aEdit).ILookupData.CurrentKey;
 
     lSelectedElement := GetBoldLookupGridDataController.BoldHandle.List[lItemIndex];
-    InternalComboSetValue(aBoldHandle, aFollower, lSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, DataController.BoldHandle);
+    InternalComboSetValue(aBoldHandle, aFollower, lSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, DataController.BoldHandle, aValue);
 {
   Assert(aEdit.EditingValue = aEdit.EditValue);
   i := aEdit.EditingValue;

@@ -1,15 +1,19 @@
 unit cxBoldEditors;
 
 {$ASSERTIONS ON}
+{$INCLUDE Bold.inc}
 
-{.$DEFINE Constraints}
+{$DEFINE Constraints}
+
 {.$DEFINE BoldDevExLog}
+
 {.$DEFINE LOGCHANGES}
 
 interface
 
 uses
   Classes,
+  SysUtils,
 
   cxClasses,
   cxControls,
@@ -63,7 +67,6 @@ uses
   BoldControlsDefs,
   BoldDefs,
   BoldAbstractListHandle,
-  BoldQueue,
   BoldComponentvalidator;
 
 type
@@ -109,11 +112,9 @@ type
     function CanEdit(aBoldHandle: TBoldElementHandle; aFollower: TBoldFollower): boolean;
     procedure SetBoldSetValueExpression(const Value: TBoldExpression);
   protected
-{$IFNDEF AttracsBold}
-    procedure _InsertItem(Follower: TBoldFollower);
-{$ELSE}
+    function IsNilRepresentation(AValue: Variant): boolean;  
     procedure _InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
+    procedure _ReplaceItem(Index: Integer; Follower: TBoldFollower);
     procedure _DeleteItem(Index: Integer; OwningFollower: TBoldFollower);
     procedure _RowAfterMakeUptoDate(Follower: TBoldFollower);
     procedure _BeforeMakeUptoDate(Follower: TBoldFollower);
@@ -127,6 +128,7 @@ type
     constructor Create(AOwner: TPersistent); override;
     destructor Destroy; override;
     class function GetContainerClass: TcxContainerClass; override;
+    function IsEditValueValid(var EditValue: TcxEditValue; AEditFocused: Boolean): Boolean; override;
     property LookupListFollower: TBoldFollower read GetListFollower;
   end;
 
@@ -152,11 +154,8 @@ type
     function CanEdit(aBoldHandle: TBoldElementHandle; aFollower: TBoldFollower): boolean;
     procedure SetBoldSetValueExpression(const Value: TBoldExpression);
   protected
-{$IFNDEF AttracsBold}
-    procedure _InsertItem(Follower: TBoldFollower);
-{$ELSE}
     procedure _InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
+    procedure _ReplaceItem(Index: Integer; Follower: TBoldFollower);
     procedure _DeleteItem(Index: Integer; OwningFollower: TBoldFollower);
     procedure _RowAfterMakeUptoDate(Follower: TBoldFollower);
     procedure _BeforeMakeUptoDate(Follower: TBoldFollower);
@@ -167,6 +166,8 @@ type
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     class function GetContainerClass: TcxContainerClass; override;
+    function IsEditValueValid(var EditValue: TcxEditValue; AEditFocused: Boolean): Boolean; override;
+    function IsDisplayValueValid(var DisplayValue: TcxEditValue; AEditFocused: Boolean): Boolean; override;
     property LookupListFollower: TBoldFollower read GetListFollower;
   published
     property BoldLookupListHandle: TBoldAbstractListHandle read GetBoldListHandle write SetBoldListHandle;
@@ -279,10 +280,6 @@ type
     property OnValidate;
   end;
 
-{$IFNDEF AttracsBold}
-TBoldAbstractHandleFollower = TBoldQueueable;
-{$ENDIF}
-
   TcxCustomBoldEditDefaultValuesProvider = class(TcxCustomEditDefaultValuesProvider)
   private
     fBoldHandleFollower: TBoldAbstractHandleFollower; // handle follower is needed if we end up needing to access follower
@@ -339,6 +336,8 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     fCurrentElementType: TBoldElementTypeInfo;
     fBoldFollowerController: TBoldFollowerController;
     fValueOrDefinitionInvalid: boolean;
+    fBrokenConstraints: TStringList;
+    fShowHintIfCaptionDoesntFit: boolean;
     procedure SetBoldHandle(const Value: TBoldElementHandle);
     function GetFollower: TBoldFollower;
     function GetBoldHandle: TBoldElementHandle;
@@ -350,11 +349,15 @@ TBoldAbstractHandleFollower = TBoldQueueable;
 {$IFDEF Constraints}
     procedure SubscribeToConstraints(aElement: TBoldElement);
 {$ENDIF}
+    function GetValueOrDefinitionInvalid: boolean;
     procedure SetValueOrDefinitionInvalid(const Value: boolean);
+    function GetIsInInternalChange: boolean;
+    function GetBrokenConstraints: TStringList;
+    function GetHasBrokenConstraints: boolean;
   protected
     // IBoldOCLComponent
     function GetContextType: TBoldElementTypeInfo;
-    procedure SetExpression({$IFDEF AttracsBold}const{$ENDIF} Value: TBoldExpression);
+    procedure SetExpression(const Value: TBoldExpression);
     function GetVariableList: TBoldExternalVariableList;
     function GetExpression: TBoldExpression;
 
@@ -372,9 +375,12 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     property BoldFollowerController: TBoldFollowerController read fBoldFollowerController;
 
     procedure InternalSetValue(const aValue: TcxEditValue); virtual;
-
+    function InternalGetValue(Follower: TBoldFollower): Variant;
     function ImmediatePost: boolean; virtual;
 
+    procedure ValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean);
+
+    function HandleApplyException(E: Exception; Elem: TBoldElement; var Discard: Boolean): Boolean;
     procedure DefaultValuesChanged; override;
     function GetModified: Boolean; override;
     function GetStoredValue: TcxEditValue; override;
@@ -387,8 +393,11 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     function IsLookupControl: Boolean; virtual;
     procedure UpdateData; virtual;
     property DefaultValuesProvider: TcxCustomBoldEditDefaultValuesProvider read GetDefaultValuesProvider;
+    procedure DoEnter; virtual;
     procedure DoExit; virtual;
-    property ValueOrDefinitionInvalid: boolean read fValueOrDefinitionInvalid write SetValueOrDefinitionInvalid;
+    property ValueOrDefinitionInvalid: boolean read GetValueOrDefinitionInvalid write SetValueOrDefinitionInvalid;
+    property BrokenConstraints: TStringList read GetBrokenConstraints;
+    property HasBrokenConstraints: boolean read GetHasBrokenConstraints;
   public
     constructor Create(AEdit: TcxCustomEdit); override;
     destructor Destroy; override;
@@ -402,11 +411,13 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     function UpdateAction(Action: TBasicAction): Boolean; override;
     procedure UpdateDisplayValue; override;
     property Follower: TBoldFollower read GetFollower;
+    property IsInInternalChange: boolean read GetIsInInternalChange;
   published
     property BoldHandle: TBoldElementHandle read GetBoldHandle write SetBoldHandle;
 //    property BoldHandleFollower: TBoldElementHandleFollower read fBoldHandleFollower write SetBoldHandleFollower;
 //    property BoldProperties: TBoldVariantFollowerController read fBoldProperties write SetBoldProperties;
     property BoldProperties: TBoldVariantFollowerController read GetBoldProperties write SetBoldProperties;
+    property ShowHintIfCaptionDoesntFit: boolean read fShowHintIfCaptionDoesntFit write fShowHintIfCaptionDoesntFit default false;
   end;
 
   TcxBoldTextEditDataBinding = class(TcxBoldEditDataBinding)
@@ -454,6 +465,8 @@ TBoldAbstractHandleFollower = TBoldQueueable;
   protected
     function GetModified: Boolean; override;
     function ImmediatePost: boolean; override;
+  public
+    constructor Create(AEdit: TcxCustomEdit); override;  
   end;
 
   TcxBoldTextEdit = class(TcxCustomTextEdit, IBoldValidateableComponent, IBoldOCLComponent)
@@ -467,12 +480,14 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
     function ValidateKeyDown(var Key: Word; Shift: TShiftState): Boolean; override;
     function ValidateKeyPress(var Key: Char): Boolean; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure DoOnChange; override;
     procedure DoChange; override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxBoldTextEditProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
   published
     property DataBinding: TcxBoldTextEditDataBinding read GetDataBinding write SetDataBinding implements IBoldValidateableComponent, IBoldOCLComponent;
@@ -549,9 +564,11 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     function CanDropDown: Boolean; override;
     procedure Paint; override;
     procedure HidePopup(Sender: TcxControl; AReason: TcxEditCloseUpReason); override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxDateEditProperties read GetActiveProperties;
+    procedure DoEnter; override;    
     procedure DoExit; override;
   published
     property DataBinding: TcxBoldDateTimeEditDataBinding read GetDataBinding write SetDataBinding implements IBoldValidateableComponent, IBoldOCLComponent;
@@ -618,9 +635,11 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
     procedure DoChange; override;
     procedure Paint; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxMemoProperties read GetActiveProperties;
+    procedure DoEnter; override;    
     procedure DoExit; override;
   published
     property Align;
@@ -683,10 +702,12 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure DoChange; override;
     function ValidateKeyDown(var Key: Word; Shift: TShiftState): Boolean; override;
     function ValidateKeyPress(var Key: Char): Boolean; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxTimeEditProperties read GetActiveProperties;
+    procedure DoEnter; override;    
     procedure DoExit; override;
   published
     property Anchors;
@@ -747,11 +768,13 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure SetProperties(Value: TcxCurrencyEditProperties);
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure DoChange; override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxCurrencyEditProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
   published
     property Anchors;
@@ -807,10 +830,12 @@ TBoldAbstractHandleFollower = TBoldQueueable;
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
     function SupportsSpelling: Boolean; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxMaskEditProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
   published
     property Anchors;
@@ -871,6 +896,7 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure SetProperties(Value: TcxCheckBoxProperties);
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure Toggle; override;
     procedure Paint; override;
     procedure Initialize; override;
@@ -878,6 +904,7 @@ TBoldAbstractHandleFollower = TBoldQueueable;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxCheckBoxProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
     property Checked;
   published
@@ -938,12 +965,14 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure SetProperties(Value: TcxBoldComboBoxProperties);
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     function SupportsSpelling: Boolean; override;
     function CanDropDown: Boolean; override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxBoldComboBoxProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
     property ItemIndex;
   published
@@ -1006,10 +1035,12 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure SetProperties(Value: TcxSpinEditProperties);
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxSpinEditProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
     property Value;
   published
@@ -1071,10 +1102,12 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure SetProperties(Value: TcxButtonEditProperties);
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxButtonEditProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
   published
     property Anchors;
@@ -1135,10 +1168,12 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure SetProperties(Value: TcxHyperLinkEditProperties);
   protected
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     procedure Paint; override;
   public
     class function GetPropertiesClass: TcxCustomEditPropertiesClass; override;
     property ActiveProperties: TcxHyperLinkEditProperties read GetActiveProperties;
+    procedure DoEnter; override;
     procedure DoExit; override;
   published
     property Anchors;
@@ -1528,6 +1563,7 @@ TBoldAbstractHandleFollower = TBoldQueueable;
   protected
     procedure EditingChanged; override;
     class function GetDataBindingClass: TcxEditDataBindingClass; override;
+    procedure DoValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean); override;
     function RealReadOnly: Boolean; override;
     procedure Paint; override;
   public
@@ -1606,11 +1642,8 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     procedure WndProc(var Message: TMessage); override;
     procedure DblClick; override;
     procedure Loaded; override;
-{$IFNDEF AttracsBold}
-    procedure _InsertItem(Follower: TBoldFollower);
-{$ELSE}
     procedure _InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
+    procedure _ReplaceItem(Index: Integer; Follower: TBoldFollower);
     procedure _DeleteItem(Index: Integer; OwningFollower: TBoldFollower);
     procedure _RowAfterMakeUptoDate(Follower: TBoldFollower);
     procedure _BeforeMakeUptoDate(Follower: TBoldFollower);
@@ -1648,7 +1681,7 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     fListHandleFollower: TBoldListHandleFollower;
     fBoldListProperties: TBoldAbstractListAsFollowerListController;
     fBoldRowProperties: TBoldVariantFollowerController;
-
+    FUpdateCount: Integer; // for Items
     fBoldRowCheckBoxProperties: TBoldCheckBoxStateFollowerController;
     fControllerList: TBoldControllerList;
 
@@ -1674,11 +1707,8 @@ TBoldAbstractHandleFollower = TBoldQueueable;
     function GetContextType: TBoldElementTypeInfo;
     procedure _DisplayCheckBox(Follower: TBoldFollower);
     procedure _DisplayString(Follower: TBoldFollower);
-{$IFNDEF AttracsBold}
-    procedure _ListInsertItem(Follower: TBoldFollower);
-{$ELSE}
     procedure _ListInsertItem(Index: integer; Follower: TBoldFollower);
-{$ENDIF}
+    procedure _ReplaceItem(Index: Integer; Follower: TBoldFollower);
     procedure _ListDeleteItem(Index: integer; Follower: TBoldFollower);
     procedure _ListBeforeMakeUpToDate(Follower: TBoldFollower);
     procedure _ListAfterMakeUpToDate(Follower: TBoldFollower);
@@ -1778,15 +1808,9 @@ type
     fCheckBoxRenderer: TBoldAsCheckBoxStateRenderer;
     fPublisher: TBoldPublisher;
     fBoldSelectionHandle: TBoldAbstractListHandle;
-{$IFNDEF AttracsBold}
-    function GetAsCheckBoxState(Element: TBoldElement; Representation: TBoldRepresentation; Expression: TBoldExpression): TCheckBoxState;
-    procedure SetAsCheckBoxState(Element: TBoldElement; newValue: TCheckBoxState; Representation: TBoldRepresentation; Expression: TBoldExpression);
-    procedure OnSubscribe(Element: TBoldElement; Representation: TBoldRepresentation; Expression: TBoldExpression; Subscriber: TBoldSubscriber);
-{$ELSE}
     function GetAsCheckBoxState(aFollower: TBoldFollower): TCheckBoxState;
     procedure SetAsCheckBoxState(aFollower: TBoldFollower; newValue: TCheckBoxState);
     procedure OnSubscribe(aFollower: TBoldFollower; Subscriber: TBoldSubscriber);
-{$ENDIF}
     procedure SetSelectionHandle(const Value: TBoldAbstractListHandle);
     // IBoldValidateableComponent
     function ValidateComponent(ComponentValidator: TBoldComponentValidator; NamePrefix: string): Boolean; override;
@@ -1804,8 +1828,8 @@ type
     fListHandleFollower: TBoldListHandleFollower;
     fBoldProperties: TBoldAbstractListAsFollowerListController;
     fBoldRowProperties: TBoldVariantFollowerController;
+    FUpdateCount: Integer;
     function GetContextType: TBoldElementTypeInfo;
-
     function GetBoldHandle: TBoldAbstractListHandle;
     procedure SetBoldHandle(value: TBoldAbstractListHandle);
     function GetFollower: TBoldFollower;
@@ -1819,11 +1843,8 @@ type
   protected
     procedure _BeforeMakeUptoDate(Follower: TBoldFollower);
     procedure _AfterMakeUptoDate(Follower: TBoldFollower);
-{$IFNDEF AttracsBold}
-    procedure _InsertItem(Follower: TBoldFollower);
-{$ELSE}
     procedure _InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
+    procedure _ReplaceItem(Index: Integer; Follower: TBoldFollower);
     procedure _DeleteItem(index: Integer; OwningFollower: TBoldFollower);
     procedure _RowAfterMakeUptoDate(Follower: TBoldFollower);
   public
@@ -1832,14 +1853,13 @@ type
     property Follower: TBoldFollower read GetFollower;
     property ListViewCanvas;
     property BoldList: TBoldList read GetBoldList;
+    property CurrentBoldObject: TBoldObject read GetCurrentBoldObject;
+    property CurrentBoldElement: TBoldElement read GetCurrentBoldElement;
   published
     property BoldHandle: TBoldAbstractListHandle read GetBoldHandle write SetBoldHandle;
     property BoldHandleIndexLock: Boolean read GetBoldHandleIndexLock write SetBoldHandleIndexLock default true;
     property BoldProperties: TBoldAbstractListAsFollowerListController read fBoldProperties write SetBoldProperties;
     property BoldRowProperties: TBoldVariantFollowerController read fBoldRowProperties write SetRowProperties;
-
-    property CurrentBoldObject: TBoldObject read GetCurrentBoldObject;
-    property CurrentBoldElement: TBoldElement read GetCurrentBoldElement;
 
     property Align;
     property AllocBy default 0;
@@ -1949,18 +1969,21 @@ procedure InternalComboSetValue(
   aSelectedElement: TBoldElement;
   aBoldSelectChangeAction: TBoldComboSelectChangeAction;
   aBoldSetValueExpression: TBoldExpression;
-  aListHandle: TBoldAbstractListHandle);
+  aListHandle: TBoldAbstractListHandle;
+  aValue: Variant);
 
 procedure _ValidateEdit(aEdit: TcxCustomEdit);
 
 implementation
 
 uses
+  Types,
+{$IFDEF BOLD_DELPHI16_OR_LATER}UiTypes,{$ENDIF}
   BoldAttributes,
   BoldBase,
-  SysUtils,
   Variants,
   Graphics,
+  BoldQueue,
   BoldEnvironment,
   cxFilterControlUtils,
   cxBoldEditConsts,
@@ -1977,11 +2000,18 @@ uses
   BoldGuard,
   BoldAFP,
   BoldGUI,
-  Forms;
+  BoldGuiResourceStrings,
+  BoldMetaElementList,
+  BoldHashIndexes,
+  BoldIndex,
+  BoldIndexableList,
+  Forms, dxMessages;
 
 type
   TcxCustomEditAccess = class(TcxCustomEdit);
   TBoldFollowerControllerAccess = class(TBoldFollowerController);
+  TBoldElementHandleAccess = class(TBoldElementHandle);
+  TcxEditValidateInfoAccess = class(TcxEditValidateInfo);
 
 {$IFDEF BoldDevExLog}
 procedure _Log(aMessage: string; aCategory: string = '');
@@ -2034,8 +2064,7 @@ begin
       lFollower := lcxBoldEditDataBinding.Follower;
       lEvaluator := lContext.Evaluator as TBoldOCL;
       lExpression := TBoldFollowerControllerAccess(lFollower.Controller).Expression;
-
-      lBoldMemberRTInfo := lEvaluator.RTInfo(lExpression, lContext, false, {$IFDEF AttracsBold}lFollower.Controller.VariableList{$ENDIF});
+      lBoldMemberRTInfo := lEvaluator.RTInfo(lExpression, lContext, false, lFollower.Controller.VariableList);
       if Assigned(lBoldMemberRTInfo) then
         lValue := lBoldMemberRTInfo.AsString
       else
@@ -2069,188 +2098,133 @@ procedure InternalComboSetValue(
   aSelectedElement: TBoldElement;
   aBoldSelectChangeAction: TBoldComboSelectChangeAction;
   aBoldSetValueExpression: TBoldExpression;
-  aListHandle: TBoldAbstractListHandle);
+  aListHandle: TBoldAbstractListHandle;
+  aValue: Variant);
 
 var
-//  LocalSelectedElement: TBoldElement;
   ElementToAssignTo: TBoldElement;
   lValue: Variant;
   lOldValue: IBoldValue;
   lHasOldValue: boolean;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
-//  lItemIndex: Integer;
-begin
-  case aBoldSelectChangeAction of
-    bdscSetText:
-      begin
-//        aDone := false;
-      end;
-    bdcsSetValue:
-      begin
-        if not (Assigned(aFollower.Element)) then
-          exit;
-        if trim(aBoldSetValueExpression) <> '' then
-          ElementToAssignTo := aFollower.Element.EvaluateExpressionAsDirectElement(aBoldSetValueExpression, TBoldFollowerControllerAccess(aFollower.Controller).VariableList)
-        else
-        begin
-        {$IFNDEF AttracsBold}
-          lGuard := TBoldGuard.Create(lIE);
-          lIE := TBoldIndirectElement.Create;
-          aFollower.Element.EvaluateExpression(TBoldFollowerControllerAccess(aFollower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(aFollower.Controller).VariableList);
-          ElementToAssignTo := lIE.Value;
-        {$ELSE}
-          ElementToAssignTo := aFollower.actualElement;
-        {$ENDIF}
-        end;
 
-        if assigned(ElementToAssignTo) and ElementToAssignTo.Mutable and
-          // must check the element (and not the follower) since we might have a BoldSetValueExpression...
-          (not (elementToAssignTo is TBoldMember) or
-           TBoldMember(ElementToAssignTo).CanModify) then
-          try
-            if elementToAssignTo is TBoldObjectReference then
-            begin
-              if aFollower.Controller.CleanOnEqual and TBoldObjectReference(elementToAssignTo).BoldMemberRTInfo.CanHaveOldValue then
-              {and TBoldObjectReference(elementToAssignTo).HasOldValues} // TODO: fix HasOldValues, currently it doesn't get updated - DM
-              begin
-                lOldValue := TBoldObjectReference(elementToAssignTo).OldValue;
-                lHasOldValue := Assigned(lOldValue);
-              end
-              else
-                lHasOldValue := false;
-
-
-              if not ElementToAssignTo.IsEqual(aSelectedElement) then
-              begin
-                {$IFDEF BoldDevExLog}
-                {$IFDEF LOGCHANGES}
-                _Log(Format('%s "%s"->"%s"', [ElementToAssignTo.DisplayName, ElementToAssignTo.asString, aSelectedElement.asString]), 'Follower Changes');
-                {$ENDIF}
-                {$ENDIF}
-                ElementToAssignTo.Assign(aSelectedElement);
-              end;
-              if lHasOldValue and TBoldObjectReference(ElementToAssignTo).IsEqualToValue(lOldValue) then
-              begin
-                TBoldObjectReference(ElementToAssignTo).BoldPersistenceState := bvpsCurrent;
-              end;
-{
-              if aFollower.Controller.CleanOnEqual then
-              begin
-                lBoldObjectIdRef := TBoldMember(ElementToAssignTo).OldValue as IBoldObjectIdRef;
-//                lBoldNullableValue := lBoldObjectIdRef as IBoldNullableValue;
-                if (not Assigned(LocalSelectedElement) and (not Assigned(lBoldObjectIdRef.Id)))
-                   or ((LocalSelectedElement is TBoldObject) and (LocalSelectedElement as TBoldObject).BoldObjectLocator.BoldobjectId.IsEqual[lBoldObjectIdRef.Id])
-                   then
-                begin
-                  (elementToAssignTo as TBoldObjectReference).Discard;
-                  (elementToAssignTo as TBoldObjectReference).EnsureContentsCurrent;
-                  TBoldObjectReference(ElementToAssignTo).BoldPersistenceState := bvpsCurrent;
-                end;
-              end;
-}
-            end
-            else
-//            if elementToAssignTo is TBoldAttribute then
-            begin
-              lValue := Null;
-              if Assigned(aSelectedElement) then
-                lValue := aSelectedElement.GetAsVariant;
-              ElementToAssignTo.SetAsVariant(lValue);
-//              (aFollower.Controller as TBoldVariantFollowerController).MayHaveChanged(lValue, aFollower);
-            end;
-          except
-            on E: Exception do
-            begin
-//              if not HandleApplyException(E, ElementToAssignTo, Discard) then
-                raise;
-//              if Discard then
-//                Follower.DiscardChange;
-            end;
-          end;
-      end;
-    bdcsNone:
-      begin
-
-      end;
-    bdcsSetReference:
-      begin
-        if aBoldHandle is TBoldReferenceHandle then
-          TBoldReferenceHandle(aBoldHandle).Value := aSelectedElement;
-{        aFollower.DiscardChange;
-        if assigned(aBoldHandle) and (aBoldHandle is TBoldReferenceHandle) then
-          (aBoldHandle as TBoldReferenceHandle).Value := LocalSelectedElement;
-}
-      end;
-    bdcsSetListIndex:
-      begin
-        aFollower.DiscardChange;
-        if assigned(aListHandle) then
-        begin
-          aListHandle.CurrentIndex := aListHandle.List.IndexOf(aSelectedElement);
-        end;
-      end;
-  end;
-
-end;
-
-(*
-procedure InternalSetToNull(aFollower: TBoldFollower);
-var
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
-  lElement: TBoldElement;
-begin
-  {$IFNDEF AttracsBold}
-    if Assigned(aFollower.Element) then
+  procedure InternalSetValue();
+  begin
+    if not ElementToAssignTo.Mutable then
     begin
-      lGuard := TBoldGuard.Create(lIE);
-      lIE := TBoldIndirectElement.Create;
-      aFollower.Element.EvaluateExpression(aFollower.Controller.Expression, lIE);
-      lElement := lIE.Value;
+      SetBoldLastFailureReason(TBoldFailureReason.CreateFmt('Element %s is immutable', [ElementToAssignTo.displayName], ElementToAssignTo));
+      exit;
     end
     else
-      lElement := nil;
-  {$ELSE}
-    lElement := aFollower.ActualElement;
-  {$ENDIF}
-    if lElement is TBoldAttribute then
-      TBoldAttribute(lElement).SetToNull; // check if this conflicts with Observer
-//      BoldProperties.MayHaveChanged(0, aFollower) // TODO brk BUG !!! figure out how to set to nil
+    if (elementToAssignTo is TBoldMember) then
+    begin
+      if not TBoldMember(ElementToAssignTo).CanModify then
+      begin
+        exit;
+      end;
+        if elementToAssignTo is TBoldObjectReference then
+        begin
+          if not ElementToAssignTo.IsEqual(aSelectedElement) then
+          begin
+            ElementToAssignTo.Assign(aSelectedElement);
+          end;
+        end
+        else
+  //            if elementToAssignTo is TBoldAttribute then
+        begin
+          lValue := Null;
+          if Assigned(aSelectedElement) then
+            lValue := aSelectedElement.AsVariant;
+          ElementToAssignTo.AsVariant := lValue;
+  //              (aFollower.Controller as TBoldVariantFollowerController).MayHaveChanged(lValue, aFollower);
+        end;
+    end;
+  end;
+
+var
+  FailureReason: TBoldFailureReason;
+  Discard: Boolean;
+  Handled: Boolean;
+begin
+  try
+    BoldClearLastFailure;
+    try
+      case aBoldSelectChangeAction of
+        bdcsNone:;
+        bdscSetText:
+          (aFollower.Controller as TBoldVariantFollowerController).MayHaveChanged(aValue, aFollower);
+        bdcsSetReference:
+          if Assigned(aBoldHandle) and aBoldHandle.CanSetValue then
+            TBoldElementHandleAccess(aBoldHandle).SetValue(aSelectedElement);
+        bdcsSetListIndex:
+          begin
+            aFollower.DiscardChange;
+            if assigned(aListHandle) then
+              aListHandle.CurrentIndex := aListHandle.List.IndexOf(aSelectedElement);
+          end;
+        bdcsSetValue:
+          begin
+            if not (Assigned(aFollower.Element)) then
+              exit;
+            if trim(aBoldSetValueExpression) <> '' then
+              ElementToAssignTo := aFollower.Element.EvaluateExpressionAsDirectElement(aBoldSetValueExpression, TBoldFollowerControllerAccess(aFollower.Controller).VariableList)
+            else
+            begin
+              ElementToAssignTo := aFollower.Value;
+            end;
+            if assigned(ElementToAssignTo) then
+              InternalSetValue();
+          end;
+      end;
+    finally
+      FailureReason := GetBoldLastFailureReason;
+      if assigned(FailureReason) then
+        BoldRaiseLastFailure(nil, '', 'InternalComboSetValue failed.');
+    end;
+  except
+    on E: Exception do
+    begin
+      Handled := assigned(aFollower.Controller) and TBoldFollowerControllerAccess(aFollower.Controller).DoApplyException(E, ElementToAssignTo, Discard);
+      if Discard then
+        aFollower.DiscardChange;
+      if not Handled then
+        raise;
+    end;
+  end;
 end;
-*)
 
 { TcxBoldTextEditProperties }
 
 procedure TcxCustomBoldTextEditProperties._DeleteItem(Index: Integer;
   OwningFollower: TBoldFollower);
 begin
+  if not LookupItems.Updating then
+    LookupItems.BeginUpdate;
   LookupItems.Delete(index);
 end;
 
-{$IFNDEF AttracsBold}
-procedure TcxCustomBoldTextEditProperties._InsertItem(Follower: TBoldFollower);
-{$ELSE}
 procedure TcxCustomBoldTextEditProperties._InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
 begin
   Assert(Assigned(Follower));
+  if not LookupItems.Updating then
+    LookupItems.BeginUpdate;
   Follower.EnsureDisplayable;
-{$IFNDEF AttracsBold}
-  LookupItems.Insert(Follower.Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower)));
-{$ELSE}
-  LookupItems.Insert(Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower)));
-{$ENDIF}
+  LookupItems.Insert(Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower)));
+end;
+
+procedure TcxCustomBoldTextEditProperties._ReplaceItem(Index: Integer;
+  Follower: TBoldFollower);
+begin
+  if not LookupItems.Updating then
+    LookupItems.BeginUpdate;
+  Follower.EnsureDisplayable;
+  LookupItems.Strings[Index] := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
 end;
 
 procedure TcxCustomBoldTextEditProperties._RowAfterMakeUptoDate(
   Follower: TBoldFollower);
 var
   index: Integer;
+  NewValue: String;
 begin
 {  OutputDebugString('TcxCustomBoldTextEditProperties._RowAfterMakeUptoDate');
   if (Owner is TcxCustomEdit) and TcxCustomEdit(Owner).IsDesigning then
@@ -2260,7 +2234,11 @@ begin
 }
   index := Follower.index;
   if (index > -1) and (index < LookupItems.Count) then
-    LookupItems[index] := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower));
+  begin
+    NewValue := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
+    if LookupItems[index] <> NewValue then
+      LookupItems[index] := NewValue;
+  end;
 //  LookupDataChanged(self);
   // forces a redisplay of the edit-area, the windows component might go blank if the active row is removed and then reinserted
 //  fBoldHandleFollower.Follower.MarkValueOutOfDate; // do we really need this here ? Danny
@@ -2282,6 +2260,18 @@ end;
 function TcxCustomBoldTextEditProperties.GetListFollower: TBoldFollower;
 begin
   Result := fListHandleFollower.Follower;
+end;
+
+function TcxCustomBoldTextEditProperties.IsEditValueValid(
+  var EditValue: TcxEditValue; AEditFocused: Boolean): Boolean;
+begin
+  result := inherited IsEditValueValid(EditValue, AEditFocused) or IsNilRepresentation(EditValue);
+end;
+
+function TcxCustomBoldTextEditProperties.IsNilRepresentation(
+  AValue: Variant): boolean;
+begin
+  result := UseLookupData and cxEditVarEquals(AValue, BoldRowProperties.NilRepresentation);
 end;
 
 procedure TcxCustomBoldTextEditProperties.SetBoldListHandle(
@@ -2309,26 +2299,22 @@ begin
 end;
 
 constructor TcxCustomBoldTextEditProperties.Create(AOwner: TPersistent);
-var
-  lMatchObject: TComponent;
+
 begin
   inherited;
-  if aOwner is TComponent then
-    lMatchObject := aOwner as TComponent
-  else
-    lMatchObject := nil;
-  fBoldRowProperties := TBoldVariantFollowerController.Create(lMatchObject);
+  fBoldRowProperties := TBoldVariantFollowerController.Create(Owner as TComponent);
   fBoldRowProperties.AfterMakeUptoDate := _RowAfterMakeUptoDate;
   fBoldRowProperties.OnGetContextType := GetContextForBoldRowProperties;
-  fBoldListProperties := TBoldAbstractListAsFollowerListController.Create(lMatchObject, fBoldRowProperties);
+  fBoldListProperties := TBoldAbstractListAsFollowerListController.Create((Owner as TComponent), fBoldRowProperties);
   with fBoldListProperties do
   begin
     OnAfterInsertItem := _InsertItem;
     OnAfterDeleteItem := _DeleteItem;
+    OnReplaceitem := _ReplaceItem;
     BeforeMakeUptoDate := _BeforeMakeUptoDate;
     AfterMakeUptoDate := _AfterMakeUptoDate;
   end;
-  fListHandleFollower := TBoldListHandleFollower.Create(Owner, fBoldListProperties);
+  fListHandleFollower := TBoldListHandleFollower.Create((Owner as TComponent).owner , fBoldListProperties);
   BoldSelectChangeAction := bdcsSetValue;
 end;
 
@@ -2344,14 +2330,14 @@ procedure TcxCustomBoldTextEditProperties._AfterMakeUptoDate(
   Follower: TBoldFollower);
 begin
   fBoldRowProperties.AfterMakeUptoDate := _RowAfterMakeUptoDate;
-  LookupItems.EndUpdate;
+  if LookupItems.Updating then
+    LookupItems.EndUpdate;
 end;
 
 procedure TcxCustomBoldTextEditProperties._BeforeMakeUptoDate(
   Follower: TBoldFollower);
 begin
   fBoldRowProperties.AfterMakeUptoDate := nil;
-  LookupItems.BeginUpdate;
 end;
 
 
@@ -2365,7 +2351,8 @@ begin
 //  fBoldProperties := TBoldVariantFollowerController.Create(AEdit);
   BoldFollowerController.AfterMakeUptoDate := _AfterMakeUptoDate;
   BoldFollowerController.OnGetContextType := GetContextType;
-  fBoldHandleFollower := TBoldElementHandleFollower.Create(AEdit, BoldFollowerController);
+  BoldFollowerController.OnApplyException := HandleApplyException;
+  fBoldHandleFollower := TBoldElementHandleFollower.Create(AEdit.Owner, BoldFollowerController);
 
   DefaultValuesProvider.BoldProperties := BoldFollowerController;
   DefaultValuesProvider.BoldHandleFollower := fBoldHandleFollower;
@@ -2386,6 +2373,7 @@ begin
     end;
     bapDemand: Follower.DiscardChange;
   end;
+  FreeAndNil(fBrokenConstraints);  
   FreeAndNil(fBoldHandleFollower);
   FreeAndNil(fBoldFollowerController);
   Edit.ViewInfo.OnPaint := nil;
@@ -2400,6 +2388,16 @@ end;
 function TcxBoldEditDataBinding.GetFollower: TBoldFollower;
 begin
   Result := fBoldHandleFollower.Follower
+end;
+
+function TcxBoldEditDataBinding.GetHasBrokenConstraints: boolean;
+begin
+  result := Assigned(fBrokenConstraints) and (BrokenConstraints.Count > 0);
+end;
+
+function TcxBoldEditDataBinding.GetIsInInternalChange: boolean;
+begin
+  result := fInternalChange > 0;
 end;
 
 procedure TcxBoldEditDataBinding.SetBoldHandle(
@@ -2518,40 +2516,9 @@ begin
 end;
 
 function TcxBoldEditDataBinding.GetStoredValue: TcxEditValue;
-var
-  lElement: TBoldElement;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
 begin
   Assert(assigned(Follower));
-  result := ((Follower.Controller) as TBoldVariantFollowerController).GetCurrentAsVariant(Follower);
-{  
-  lElement := Follower.ActualElement;
-  if Assigned(lElement) then
-    Assert(result = lElement.GetAsVariant)
-  else
-    Assert(VarIsEmpty(result) or (result = Null));
-  exit;
-}
-{$IFNDEF AttracsBold}
-  if Assigned(Follower.Element) then
-  begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    lElement := lIE.Value;
-  end
-  else
-    lElement := nil;
-{$ELSE}
-  lElement := Follower.ActualElement;
-{$ENDIF}
-  if Assigned(lElement) then
-    result := lElement.GetAsVariant
-  else
-    result := Null;
+  result := ((Follower.Controller) as TBoldVariantFollowerController).GetAsVariant(Follower);
 end;
 
 function TcxBoldEditDataBinding.IsLookupControl: Boolean;
@@ -2566,12 +2533,22 @@ end;
 
 procedure TcxBoldEditDataBinding.Reset;
 begin
+  inc(fInternalChange);
+  try
   case BoldFollowerController.ApplyPolicy of
+    bapChange :
+      begin
+//        Follower.UndoChange;
+      end;
     bapExit, bapDemand: Follower.DiscardChange;
   end;
-  TBoldQueueable.DisplayAll;
   inherited;
-  Edit.SelectAll;
+//  Follower.Display;
+//  TBoldQueueable.DisplayAll;
+  finally
+    dec(fInternalChange);
+    Edit.LockClick(False);
+  end;
 end;
 
 procedure TcxBoldEditDataBinding.SetModified;
@@ -2638,11 +2615,10 @@ var
   lValue: Variant;
 //  lcxBoldComboBoxProperties: TcxBoldComboBoxProperties;
   lElement: TBoldElement;
-  lIcxBoldEditProperties: IcxBoldEditProperties;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
+//  WasModified: boolean;
+  ASize: TSize;
+  AViewData: TcxCustomEditViewData;
+  AEditSizeProperties: TcxEditSizeProperties;
 begin
   if fInternalChange > 0 then
   begin
@@ -2651,10 +2627,11 @@ begin
     _Log('TcxBoldEditDataBinding._AfterMakeUptoDate: fInternalChange ' + Edit.Name, className);
     {$ENDIF}
     {$IFDEF Constraints}
-    SubscribeToConstraints(Follower.ActualElement);
+     SubscribeToConstraints(Follower.Value);
     {$ENDIF}
     exit;
   end;
+//  WasModified := Edit.ModifiedAfterEnter or Edit.EditModified;
   Edit.LockClick(True);
   inc(fInternalChange);
   try
@@ -2663,78 +2640,89 @@ begin
     lValue := null;
     if Edit.IsDesigning then
     begin
-(*
-      if not Assigned(BoldHandle) then
-        lValue := '< not connected >'
-      else
-  {$IFDEF AttracsBold}
-      if IsDataAvailable and Assigned(Follower.ActualElement) then
-        lValue := Follower.ActualElement.DisplayName
-      else
-  {$ENDIF}
-      lValue := TBoldFollowerControllerAccess(BoldFollowerController).Expression;
-*)
       _ValidateEdit(Edit);
     end
     else
     begin
-  {    if (Edit.ActiveProperties is TcxBoldComboBoxProperties) then
-      begin
-        lcxBoldComboBoxProperties := (Edit.ActiveProperties as TcxBoldComboBoxProperties);
-        if (Edit is TcxCustomComboBox) and Assigned(TcxCustomComboBox(Edit).ILookupData.ActiveControl) then
-        begin
-          TcxCustomEditListBox(TcxCustomComboBox(Edit).ILookupData.ActiveControl).ItemIndex := lcxBoldComboBoxProperties.LookupListFollower.CurrentIndex;
-        end;
-      end;
-  }
       TypeMayHaveChanged;
-
-//      if Supports(Edit.ActiveProperties, IcxBoldEditProperties, lIcxBoldEditProperties) then
-//      begin
-      {$IFNDEF AttracsBold}
-        if Assigned(Follower.Element) then
-        begin
-          lGuard := TBoldGuard.Create(lIE);
-          lIE := TBoldIndirectElement.Create;
-          Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-          lElement := lIE.Value;
-        end
-        else
-          lElement := nil;
-      {$ELSE}
-        lElement := Follower.ActualElement;
+      {$IFDEF Constraints}
+      lElement := Follower.Value;
+      SubscribeToConstraints(lElement);
       {$ENDIF}
-
-        {$IFDEF Constraints}
-        SubscribeToConstraints(lElement);
-        {$ENDIF}
-
-        if Supports(Edit.ActiveProperties, IcxBoldEditProperties, lIcxBoldEditProperties) then
-        begin
-//          if Assigned(lElement) then
-            lValue := lIcxBoldEditProperties.BoldElementToEditValue(Follower, lElement, Edit);
-        end
-        else
-        begin
-//        lValue := lElement.AsVariant;
-          lValue := TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower);
-          if VarIsEmpty(lValue) then
-            lValue := Null;
-        end;
-//  {$IFDEF Constraints}
-//      SubscribeToConstraints(lElement);
-//  {$ENDIF}
+      lValue := InternalGetValue(Follower);
       if Edit.ModifiedAfterEnter and not Edit.IsPosting then
         Edit.Reset;
       if not cxEditVarEquals(Edit.EditValue, lValue) then
       begin
         TcxCustomEditAccess(Edit).SetInternalEditValue(lValue);
       end;
+      if ShowHintIfCaptionDoesntFit then
+      begin
+        AViewData := TcxCustomEditViewData(TcxCustomEditAccess(Edit).CreateViewData);
+        try
+          TcxCustomEditAccess(Edit).PopulateSizeProperties(AEditSizeProperties);
+          ASize := AViewData.GetEditSize(cxScreenCanvas, lValue, AEditSizeProperties, edit.ViewInfo);
+          if ASize.cx > Edit.Width then
+          begin
+            Edit.Hint := VarToStr(lValue);
+            Edit.ShowHint := true;
+          end
+          else
+          begin
+            Edit.Hint := '';
+            Edit.ShowHint := false;
+          end;
+        finally
+          FreeAndNil(AViewData);
+        end;
+      end;
     end;
   finally
-    Edit.LockClick(False);
-    dec(fInternalChange);
+    ValueOrDefinitionInvalid := false;
+    try
+      if Assigned(Edit.ViewInfo) and Assigned(Edit.ViewInfo.ErrorData) and TcxEditValidateInfoAccess(Edit.ViewInfo.ErrorData).IsError then
+      begin
+        ValueOrDefinitionInvalid := not Edit.ValidateEdit(false);
+      end;
+    finally
+//      TcxCustomTextEditAccess(Edit).ResetEditValue;
+      Edit.LockClick(False);
+      dec(fInternalChange);
+      if Edit.IsFocused and not Edit.EditModified then
+        Edit.SelectAll
+    end;
   end;
+end;
+
+function TcxBoldEditDataBinding.InternalGetValue(Follower: TBoldFollower): Variant;
+var
+  lElement: TBoldElement;
+  lIcxBoldEditProperties: IcxBoldEditProperties;
+begin
+  result := Null;
+  lElement := Follower.Value;
+{    if (Edit.ActiveProperties is TcxBoldComboBoxProperties) then
+    begin
+      lcxBoldComboBoxProperties := (Edit.ActiveProperties as TcxBoldComboBoxProperties);
+      if (Edit is TcxCustomComboBox) and Assigned(TcxCustomComboBox(Edit).ILookupData.ActiveControl) then
+      begin
+        TcxCustomEditListBox(TcxCustomComboBox(Edit).ILookupData.ActiveControl).ItemIndex := lcxBoldComboBoxProperties.LookupListFollower.CurrentIndex;
+      end;
+    end;
+}
+  if Supports(Edit.ActiveProperties, IcxBoldEditProperties, lIcxBoldEditProperties) then
+    result := lIcxBoldEditProperties.BoldElementToEditValue(Follower, lElement, Edit)
+  else
+    result := TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower);
+  if VarIsEmpty(result) then
+    result := Null;
+end;
+
+function TcxBoldEditDataBinding.GetBrokenConstraints: TStringList;
+begin
+  if not Assigned(fBrokenConstraints) then
+    fBrokenConstraints := TStringList.Create;
+  result := fBrokenConstraints;
 end;
 
 function TcxBoldEditDataBinding.GetContextType: TBoldElementTypeInfo;
@@ -2789,58 +2777,75 @@ begin
     try
       InternalSetValue(Edit.EditingValue);
       if ImmediatePost  then
-      begin
         Follower.Apply;
-        TBoldQueueable.DisplayAll;
-      end;
+      Follower.EnsureDisplayable;
     finally
       dec(fInternalChange);
     end;
   end;
 end;
 
+procedure TcxBoldEditDataBinding.DoEnter;
+begin
+  if (Follower.State = bfsDirty) then
+    Edit.ModifiedAfterEnter := true;
+end;
+
 procedure TcxBoldEditDataBinding.DoExit;
 begin
   if (Follower.State = bfsDirty) and (Follower.Controller.ApplyPolicy <> bapDemand) then
+  try
     Follower.Apply;
+  except
+    Follower.DiscardChange;
+  end;
 end;
 
 {$IFDEF Constraints}
 procedure TcxBoldEditDataBinding.SubscribeToConstraints(
   aElement: TBoldElement);
 var
-  lValid: boolean;
   s: string;
   lIE: TBoldIndirectElement;
   lConstraintList: TBoldList;
 const
   ECM_FIRST = $1500;
   EM_SETCUEBANNER = ECM_FIRST + 1;
-begin
-  lValid := true;
-  if ((aElement is TBoldObject) {and (TBoldObject(aElement).BoldClassTypeInfo.ConstraintCount > 0)})
-  or (aElement is TBoldObjectReference)
-  or ((aElement is TBoldMember) and Assigned(TBoldMember(aElement).BoldMemberRTInfo) and (TBoldMember(aElement).BoldMemberRTInfo.ConstraintCount > 0)) then
+
+  procedure EvaluateConstraints(AElement: TBoldElement);
+  var
+    i: integer;
   begin
     lIE := TBoldIndirectElement.Create;
     try
-      aElement.EvaluateExpression('constraints->select(c|not c)', lIe);
+      aElement.EvaluateAndSubscribeToExpression('constraints->select(c|not c)', Follower.Subscriber, lIe);
       lConstraintList := lIE.Value as TBoldList;
-      lValid := lConstraintList.Count = 0;
-      if (fValueOrDefinitionInvalid <> not lValid) then
-      begin
-        if not lValid and (VarisNull(Edit.EditingValue) or (Edit.EditingValue = ''))  then
-          s := lConstraintList[0].StringRepresentation[11]
-        else
-          s := '';
+      for i := 0 to lConstraintList.Count - 1 do
+        BrokenConstraints.AddObject(lConstraintList[i].StringRepresentation[11], lConstraintList[i]);
+      if HasBrokenConstraints then
         if Assigned(Edit) and Assigned(TcxCustomEditAccess(Edit).InnerEdit) then
+        begin
+          s := BrokenConstraints.Text;
           SendMessage(TcxCustomEditAccess(Edit).InnerEdit.Control.Handle, EM_SETCUEBANNER, 1, LParam(PWideChar(WideString(s))));
-      end;
+        end;
     finally
       lIE.free;
     end;
   end;
-  ValueOrDefinitionInvalid := not lValid;
+
+begin
+  FreeAndNil(fBrokenConstraints);
+  if not Assigned(aElement) then
+    exit;
+  if ((aElement is TBoldMember) and (Assigned(TBoldMember(aElement).BoldMemberRTinfo)) and
+      ((TBoldMember(aElement).BoldMemberRTinfo.ConstraintCount > 0)
+//      or (TBoldMember(aElement).OwningObject.BoldClassTypeInfo.ConstraintCount > 0)
+      )) or
+     (aElement is TBoldObject) and (TBoldObject(aElement).BoldClassTypeInfo.ConstraintCount > 0) or
+     (aElement is TBoldSystem) and (TBoldSystem(aElement).BoldSystemTypeInfo.ConstraintCount > 0 ) then
+  begin
+    EvaluateConstraints(AElement);
+  end;
 end;
 {$ENDIF}
 
@@ -2864,7 +2869,7 @@ begin
     result := ComponentValidator.ValidateExpressionInContext(
       TBoldFollowerControllerAccess(BoldFollowerController).Expression,
       lContext,
-      format('%s %s.Expression', [NamePrefix, Edit.Name]){$IFDEF AttracsBold}, TBoldFollowerControllerAccess(BoldFollowerController).VariableList{$ENDIF}) and result; // do not localize
+      format('%s %s.Expression', [NamePrefix, Edit.Name]), TBoldFollowerControllerAccess(BoldFollowerController).VariableList) and result; // do not localize
 
     if result then
     begin
@@ -2891,6 +2896,11 @@ function TcxBoldEditDataBinding.ValidateTypeConforms(
   aExpressionType: TBoldElementTypeInfo): string;
 begin
   result := '';
+end;
+
+function TcxBoldEditDataBinding.GetValueOrDefinitionInvalid: boolean;
+begin
+  result := fValueOrDefinitionInvalid;
 end;
 
 procedure TcxBoldEditDataBinding.SetValueOrDefinitionInvalid(
@@ -2938,9 +2948,48 @@ begin
   result := BoldProperties.VariableList;
 end;
 
-procedure TcxBoldEditDataBinding.SetExpression({$IFDEF AttracsBold}const{$ENDIF} Value: TBoldExpression);
+function TcxBoldEditDataBinding.HandleApplyException(E: Exception;
+  Elem: TBoldElement; var Discard: Boolean): Boolean;
+begin
+  result := false;
+  if Edit.IsDestroying then
+    exit;
+  if Assigned(Edit.ActiveProperties) then
+    result := not (evoRaiseException in Edit.ActiveProperties.ValidationOptions);
+  if not TcxCustomEditAccess(Edit).IsEditValidated then
+    Edit.ValidateEdit(false);
+end;
+
+procedure TcxBoldEditDataBinding.SetExpression(const Value: TBoldExpression);
 begin
   BoldProperties.Expression := Value;
+end;
+
+procedure TcxBoldEditDataBinding.ValidateDisplayValue(var ADisplayValue: TcxEditValue; var AErrorText: TCaption; var AError: Boolean);
+
+  procedure AddMessage(const s: string);
+  begin
+    if AErrorText <> '' then
+      AErrorText := AErrorText + BOLDCRLF + s
+    else
+      AErrorText := s;
+  end;
+begin
+  if not AError then
+    AErrorText := '';
+  BoldClearLastFailure;
+  if not BoldProperties.ValidateVariant(ADisplayValue, Follower) then
+  begin
+    AError := true;
+    if (BoldSystem.GetBoldLastFailureReason <> nil) then
+      AddMessage(BoldSystem.GetBoldLastFailureReason.Reason);
+  end;
+  if HasBrokenConstraints then
+  begin
+    AError := true;
+    AddMessage(BrokenConstraints.text);
+  end;
+  ValueOrDefinitionInvalid := AError;
 end;
 
 { TcxBoldTextEdit }
@@ -3012,10 +3061,25 @@ begin
   PostEditValue;
 end;
 
+procedure TcxBoldTextEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
+end;
+
 procedure TcxBoldTextEdit.DoChange;
 begin
   inherited;
   DataBinding.DoChanged;
+end;
+
+procedure TcxBoldTextEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
 end;
 
 procedure TcxBoldTextEdit.DoExit;
@@ -3057,28 +3121,11 @@ end;
 function TcxCustomBoldEditDefaultValuesProvider.DefaultAlignment: TAlignment;
 var
   lElement: TBoldElement;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
 begin
   Result := taLeftJustify;
-//  exit;
   if IsDataAvailable then
   begin
-  {$IFNDEF AttracsBold}
-    if Assigned(Follower.Element) then
-    begin
-      lGuard := TBoldGuard.Create(lIE);
-      lIE := TBoldIndirectElement.Create;
-      Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-      lElement := lIE.Value;
-    end
-    else
-      lElement := nil;
-  {$ELSE}
-    lElement := Follower.ActualElement;
-  {$ENDIF}
+    lElement := Follower.Value;
     if (lElement is TBAMoment) or (lElement is TBANumeric) then
       result := taRightJustify;
   end;
@@ -3087,25 +3134,9 @@ end;
 function TcxCustomBoldEditDefaultValuesProvider.DefaultBlobKind: TcxBlobKind;
 var
   lElement: TBoldElement;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
 begin
   Result := cxEdit.bkNone;
-{$IFNDEF AttracsBold}
-  if Assigned(Follower.Element) then
-  begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    lElement := lIE.Value;
-  end
-  else
-    lElement := nil;
-{$ELSE}
-  lElement := Follower.ActualElement;
-{$ENDIF}
+  lElement := Follower.Value;
   if (lElement is TBABlob) then
   begin
     if (lElement is TBABlobImageBMP) or (lElement is TBABlobImageJPEG) then
@@ -3117,7 +3148,7 @@ begin
 //    TcxBlobKind = (bkNone, bkBlob, bkGraphic, bkMemo, bkOle);
 {
   MIME decode to see what type it is
-            (Follower.ActualElement as TBATypedBlob).ContentType
+            (Follower.Value as TBATypedBlob).ContentType
 }
     end
     else
@@ -3127,54 +3158,28 @@ end;
 function TcxCustomBoldEditDefaultValuesProvider.DefaultCanModify: Boolean;
 begin
 // TODO: 'not Assigned(Follower.Element)' is a temp workaround for cases where Value is nil and hence not allowed to be modified as per TBoldRenderer.DefaultMayModify
-  Result := not DefaultReadOnly and IsDataAvailable and (Follower.Controller.MayModify(Follower) or not Assigned(Follower.Element)) {DataBinding.MayModify};
+// Follower here can be list(lookup) follower instead of single editing follower, so we can't use it for MayModify
+  Result := not DefaultReadOnly and IsDataAvailable {and (Follower.Controller.MayModify(Follower) or not Assigned(Follower.Element))} {DataBinding.MayModify};
 end;
 
 function TcxCustomBoldEditDefaultValuesProvider.DefaultIsFloatValue: Boolean;
 var
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
   lElement: TBoldElement;
 begin
-{$IFNDEF AttracsBold}
-  if Assigned(Follower.Element) then
-  begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    lElement := lIE.Value;
-  end
-  else
-    lElement := nil;
-{$ELSE}
-  lElement := Follower.ActualElement;
-{$ENDIF}
+  lElement := nil;
+  if Assigned(Follower) then
+    lElement := Follower.Value;
   result := (lElement is TBAFloat) or (lElement is TBACurrency);
 end;
 
 function TcxCustomBoldEditDefaultValuesProvider.DefaultMaxLength: Integer;
 var
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
   lElement: TBoldElement;
 begin
-{$IFNDEF AttracsBold}
-  if Assigned(Follower.Element) then
-  begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    lElement := lIE.Value;
-  end
-  else
-    lElement := nil;
-{$ELSE}
-  lElement := Follower.ActualElement;
-{$ENDIF}
+  result := 0;
+  if not Assigned(fBoldHandleFollower) then
+    exit;
+  lElement := Follower.Value;
   if (lElement is TBAString) and Assigned(TBAString(lElement).BoldAttributeRTInfo) then
   begin
     result := TBAString(lElement).BoldAttributeRTInfo.Length;
@@ -3187,56 +3192,24 @@ end;
 
 function TcxCustomBoldEditDefaultValuesProvider.IsBlob: Boolean;
 var
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
   lElement: TBoldElement;
 begin
   result := IsDataAvailable;
   if result then
   begin
-{$IFNDEF AttracsBold}
-    if Assigned(Follower.Element) then
-    begin
-      lGuard := TBoldGuard.Create(lIE);
-      lIE := TBoldIndirectElement.Create;
-      Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-      lElement := lIE.Value;
-    end
-    else
-      lElement := nil;
-{$ELSE}
-    lElement := Follower.ActualElement;
-{$ENDIF}
+    lElement := Follower.Value;
     result := (lElement is TBABlob);
   end;
 end;
 
 function TcxCustomBoldEditDefaultValuesProvider.IsCurrency: Boolean;
 var
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
   lElement: TBoldElement;
 begin
   result := IsDataAvailable;
   if result then
   begin
-{$IFNDEF AttracsBold}
-    if Assigned(Follower.Element) then
-    begin
-      lGuard := TBoldGuard.Create(lIE);
-      lIE := TBoldIndirectElement.Create;
-      Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-      lElement := lIE.Value;
-    end
-    else
-      lElement := nil;
-{$ELSE}
-    lElement := Follower.ActualElement;
-{$ENDIF}
+    lElement := Follower.Value;
     result := (lElement is TBACurrency);
   end;
 end;
@@ -3249,46 +3222,76 @@ begin
     result := TBoldVariantFollowerController(BoldProperties).ValidateCharacter(AChar, Follower);
 end;
 
+{function TcxCustomBoldEditDefaultValuesProvider.GetFollower: TBoldFollower;
+begin
+  Result := DataBinding.Follower;
+end;}
+
 function TcxCustomBoldEditDefaultValuesProvider.GetFollower: TBoldFollower;
 begin
-{$IFDEF AttracsBold}
-  result := BoldHandleFollower.Follower;
-{$ELSE}
-  if BoldHandleFollower is TBoldElementHandleFollower then
-    result := TBoldElementHandleFollower(BoldHandleFollower).Follower
-  else
-  if BoldHandleFollower is TBoldListHandleFollower then
-    result := TBoldListHandleFollower(BoldHandleFollower).Follower
+  if Assigned(BoldHandleFollower) then
+    result := BoldHandleFollower.Follower
   else
     result := nil;
-{$ENDIF}
 end;
-
+(*
+procedure TcxCustomBoldEditDefaultValuesProvider.SetBoldHandle(
+  const Value: TBoldElementHandle);
+begin
+  self.BoldHandleFollower.BoldHandle := Value;
+// TODO: Place subscriptions instead of free notifications
+{
+  if BoldHandle <> Value then
+  begin
+    if BoldHandle <> nil then
+      FFreeNotifier.RemoveSender(BoldHandle);
+    BoldHandle := Value;
+    if BoldHandle <> nil then
+      FFreeNotifier.AddSender(BoldHandle);
+  end;
+}
+end;
+*)
 procedure TcxCustomBoldEditDefaultValuesProvider.SetBoldProperties(
   const Value: TBoldFollowerController);
 begin
   fBoldProperties := Value;
+// TODO: Place subscriptions instead of free notifications
+{
+  if fBoldProperties <> Value then
+  begin
+    if fBoldProperties <> nil then
+      FFreeNotifier.RemoveSender(fBoldProperties);
+    fBoldProperties := Value;
+    if fBoldProperties <> nil then
+      FFreeNotifier.AddSender(fBoldProperties);
+  end;
+}
 end;
 
 procedure TcxCustomBoldEditDefaultValuesProvider.SetHandleFollower(
   const Value: TBoldAbstractHandleFollower);
 begin
   fBoldHandleFollower := Value;
+// TODO: Place subscriptions instead of free notifications
+{
+  if fBoldHandleFollower <> Value then
+  begin
+    if fBoldHandleFollower <> nil then
+      FFreeNotifier.RemoveSender(fBoldHandleFollower);
+    fBoldHandleFollower := Value;
+    if fBoldHandleFollower <> nil then
+      FFreeNotifier.AddSender(fBoldHandleFollower);
+  end;
+}
 end;
 
 function TcxCustomBoldEditDefaultValuesProvider.GetBoldHandle: TBoldElementHandle;
 begin
-{$IFDEF AttracsBold}
-  result := BoldHandleFollower.BoldHandle;
-{$ELSE}
-  if BoldHandleFollower is TBoldElementHandleFollower then
-    result := TBoldElementHandleFollower(BoldHandleFollower).BoldHandle
-  else
-  if BoldHandleFollower is TBoldListHandleFollower then
-    result := TBoldListHandleFollower(BoldHandleFollower).BoldHandle
+  if Assigned(BoldHandleFollower) then
+    result := BoldHandleFollower.BoldHandle
   else
     result := nil;
-{$ENDIF}
 end;
 
 constructor TcxCustomBoldEditDefaultValuesProvider.Create(
@@ -3353,6 +3356,12 @@ begin
   DataBinding.DoChanged;
 end;
 
+procedure TcxBoldDateEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldDateEdit.DoExit;
 begin
   inherited;
@@ -3362,7 +3371,17 @@ end;
 procedure TcxBoldDateEdit.DoOnChange;
 begin
   inherited;
-  PostEditValue;
+  if not DataBinding.IsInInternalChange then
+    PostEditValue;
+end;
+
+procedure TcxBoldDateEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 { TcxBoldDateEdit }
@@ -3401,7 +3420,7 @@ begin
   if AReason = crEnter then
   begin
     DataBinding.InternalSetValue(EditingValue);
-    if (DataBinding.BoldFollowerController.ApplyPolicy <> bapDemand) then
+    if (DataBinding.BoldFollowerController.ApplyPolicy <> bapDemand) and (DataBinding.Follower.State = bfsDirty) then
       DataBinding.Follower.Apply;
   end;
 end;
@@ -3454,10 +3473,24 @@ begin
   DataBinding.DoChanged;
 end;
 
+procedure TcxBoldMemo.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldMemo.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldMemo.DoValidateDisplayValue(var ADisplayValue: TcxEditValue;
+  var AErrorText: TCaption; var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then    
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldMemo.GetActiveProperties: TcxMemoProperties;
@@ -3510,10 +3543,25 @@ begin
   DataBinding.DoChanged;
 end;
 
+procedure TcxBoldTimeEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldTimeEdit.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldTimeEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldTimeEdit.GetActiveProperties: TcxTimeEditProperties;
@@ -3582,10 +3630,25 @@ end;
 
 { TcxBoldCurrencyEdit }
 
+procedure TcxBoldCurrencyEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldCurrencyEdit.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldCurrencyEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldCurrencyEdit.GetActiveProperties: TcxCurrencyEditProperties;
@@ -3651,10 +3714,25 @@ end;
 }
 { TcxBoldMaskEdit }
 
+procedure TcxBoldMaskEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldMaskEdit.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldMaskEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldMaskEdit.GetActiveProperties: TcxMaskEditProperties;
@@ -3710,7 +3788,7 @@ end;
 
 function TcxBoldCheckBoxEditDataBinding.MayModify: boolean;
 begin
-  result := inherited MayModify and (fCurrentElementType is TBoldAttributeTypeInfo) and TBoldAttributeTypeInfo(fCurrentElementType).AttributeClass.InheritsFrom(TBABoolean);
+  result := inherited MayModify; //and (fCurrentElementType is TBoldAttributeTypeInfo) and TBoldAttributeTypeInfo(fCurrentElementType).AttributeClass.InheritsFrom(TBABoolean);
 end;
 
 
@@ -3741,10 +3819,26 @@ begin
   DataBinding.DoChanged;
 end;
 
+procedure TcxBoldCheckBox.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldCheckBox.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldCheckBox.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  ADisplayValue := EditingValue;
+  if Assigned(DataBinding) then    
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldCheckBox.GetActiveProperties: TcxCheckBoxProperties;
@@ -3803,9 +3897,11 @@ procedure TcxBoldCheckBox.Toggle;
 begin
   // this is a bit hacky, would be better if we can set it somewhere once
   FProperties.ImmediatePost := DataBinding.ImmediatePost;
-  if CanModify and Assigned(DataBinding.Follower.Element) then
+  if CanModify and (DataBinding.MayModify) and Assigned(DataBinding.Follower.Element) then
+  begin
     inherited Toggle;
-  DataBinding.Follower.Apply;
+    DataBinding.Follower.Apply;
+  end;
 end;
 
 { TcxBoldComboBoxProperties }
@@ -3813,36 +3909,48 @@ end;
 procedure TcxBoldComboBoxProperties._DeleteItem(Index: Integer;
   OwningFollower: TBoldFollower);
 begin
+  if not Items.Updating then
+    Items.BeginUpdate;
   Items.Delete(index);
 end;
 
-{$IFNDEF AttracsBold}
-procedure TcxBoldComboBoxProperties._InsertItem(Follower: TBoldFollower);
-{$ELSE}
 procedure TcxBoldComboBoxProperties._InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
 begin
+  if not Items.Updating then
+    Items.BeginUpdate;
   if Assigned(Follower) then
   begin
     Follower.EnsureDisplayable;
-    Items.Insert(Follower.Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower)));
+    Items.Insert(Follower.Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower)));
   end
   else
   begin
-{$IFDEF AttracsBold}
-    Items.Insert(Index, BoldRowProperties.NilRepresentation);
-{$ENDIF}
+    Items.Insert(Index, VarToStr(BoldRowProperties.NilRepresentation));
   end;
+end;
+
+procedure TcxBoldComboBoxProperties._ReplaceItem(Index: Integer;
+  Follower: TBoldFollower);
+begin
+  if not Items.Updating then
+    Items.BeginUpdate;
+  Follower.EnsureDisplayable;
+  Items.Strings[Index] := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
 end;
 
 procedure TcxBoldComboBoxProperties._RowAfterMakeUptoDate(
   Follower: TBoldFollower);
 var
   index: Integer;
+  NewValue: String;
 begin
   index := Follower.index;
   if (index > -1) and (index < Items.Count) then
-    Items[index] := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower));
+  begin
+    NewValue := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
+    if NewValue <> Items[index] then
+      Items[index] := NewValue;
+  end;
 //  LookupDataChanged(self);
   // forces a redisplay of the edit-area, the windows component might go blank if the active row is removed and then reinserted
 //  fBoldHandleFollower.Follower.MarkValueOutOfDate; // do we really need this here ? Danny
@@ -3852,14 +3960,14 @@ procedure TcxBoldComboBoxProperties._AfterMakeUptoDate(
   Follower: TBoldFollower);
 begin
   fBoldRowProperties.AfterMakeUptoDate := _RowAfterMakeUptoDate;
-  Items.EndUpdate;
+  if Items.Updating then
+    Items.EndUpdate;
 end;
 
 procedure TcxBoldComboBoxProperties._BeforeMakeUptoDate(
   Follower: TBoldFollower);
 begin
   fBoldRowProperties.AfterMakeUptoDate := nil;
-  Items.BeginUpdate;
 end;
 
 constructor TcxBoldComboBoxProperties.Create(AOwner: TPersistent);
@@ -3880,6 +3988,7 @@ begin
   begin
     OnAfterInsertItem := _InsertItem;
     OnAfterDeleteItem := _DeleteItem;
+    OnReplaceitem := _ReplaceItem;
     BeforeMakeUptoDate := _BeforeMakeUptoDate;
     AfterMakeUptoDate := _AfterMakeUptoDate;
   end;
@@ -3916,6 +4025,25 @@ begin
   Result := fListHandleFollower.Follower;
 end;
 
+function TcxBoldComboBoxProperties.IsDisplayValueValid(
+  var DisplayValue: TcxEditValue; AEditFocused: Boolean): Boolean;
+begin
+//  result := cxEditVarEquals(DisplayValue, BoldRowProperties.NilRepresentation) or inherited IsDisplayValueValid(DisplayValue, AEditFocused)
+  if not VarIsNull(BoldRowProperties.NilRepresentation) and cxEditVarEquals(DisplayValue, BoldRowProperties.NilRepresentation) then
+    result := true
+  else
+    result := inherited IsDisplayValueValid(DisplayValue, AEditFocused);
+end;
+
+function TcxBoldComboBoxProperties.IsEditValueValid(var EditValue: TcxEditValue;
+  AEditFocused: Boolean): Boolean;
+begin
+//  result := inherited IsEditValueValid(EditValue, AEditFocused) or cxEditVarEquals(EditValue, BoldRowProperties.NilRepresentation);
+  result := inherited IsEditValueValid(EditValue, AEditFocused);
+  if not result then
+    result := cxEditVarEquals(EditValue, BoldRowProperties.NilRepresentation);
+end;
+
 procedure TcxBoldComboBoxProperties.SetBoldListHandle(
   const Value: TBoldAbstractListHandle);
 begin
@@ -3937,10 +4065,8 @@ end;
 procedure TcxBoldComboBoxProperties.SetBoldSelectChangeAction(
   Value: TBoldComboSelectChangeAction);
 begin
-{  if (Value = bdcsSetReference) and assigned(BoldHandle) and
-     not (BoldHandle is TBoldReferenceHandle) then
-    raise EBold.Create(sChangeActionCannotBeSetReference);
-}
+//  if (Value = bdcsSetReference) and assigned(BoldHandle) and not BoldHandle.CanSetValue then
+//    raise EBold.Create(sChangeActionCannotBeSetReference);
   fBoldSelectChangeAction := Value;
 end;
 
@@ -3978,7 +4104,7 @@ begin
       LocalSelectedElement := BoldLookupListHandle.List[lItemIndex];
     end;
   end;
-  InternalComboSetValue(aBoldHandle, aFollower, LocalSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, BoldLookupListHandle);
+  InternalComboSetValue(aBoldHandle, aFollower, LocalSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, BoldLookupListHandle, aValue);
   aDone := true;
 end;
 
@@ -4018,7 +4144,7 @@ begin
     result := ComponentValidator.ValidateExpressionInContext(
       BoldRowProperties.Expression,
       lContext,
-      format('%s %s.BoldRowProperties.Expression', [NamePrefix, lName]){$IFDEF AttracsBold}, BoldRowProperties.VariableList{$ENDIF}) and result; // do not localize
+      format('%s %s.BoldRowProperties.Expression', [NamePrefix, lName]), BoldRowProperties.VariableList) and result; // do not localize
 
     if (BoldSelectChangeAction = bdcsSetValue) and (Owner is TcxCustomEdit) then
     begin
@@ -4027,8 +4153,8 @@ begin
       result := ComponentValidator.ValidateExpressionInContext(
         BoldSetValueExpression,
         lContext,
-        format('%s %s.BoldSetValueExpression', [NamePrefix, lName])
-        {$IFDEF AttracsBold},lcxBoldEditDataBinding.BoldProperties.VariableList{$ENDIF}) and result; // do not localize
+        format('%s %s.BoldSetValueExpression', [NamePrefix, lName]),
+        lcxBoldEditDataBinding.BoldProperties.VariableList) and result; // do not localize
     end;
   end;
 end;
@@ -4036,7 +4162,7 @@ end;
 function TcxBoldComboBoxProperties.BoldElementToEditValue(
   aFollower: TBoldFollower; aElement: TBoldElement; aEdit: TcxCustomEdit): variant;
 begin
-  result := BoldRowProperties.GetCurrentAsVariant(aFollower);
+  result := BoldRowProperties.GetAsVariant(aFollower);
 end;
 
 procedure TcxBoldComboBoxProperties.Assign(Source: TPersistent);
@@ -4108,10 +4234,25 @@ begin
   end;
 end;
 
+procedure TcxBoldComboBox.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldComboBox.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldComboBox.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then  
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldComboBox.GetActiveProperties: TcxBoldComboBoxProperties;
@@ -4172,10 +4313,25 @@ end;
 }
 { TcxBoldSpinEdit }
 
+procedure TcxBoldSpinEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldSpinEdit.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldSpinEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldSpinEdit.GetActiveProperties: TcxSpinEditProperties;
@@ -4223,10 +4379,25 @@ end;
 
 { TcxBoldButtonEdit }
 
+procedure TcxBoldButtonEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldButtonEdit.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldButtonEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then    
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldButtonEdit.GetActiveProperties: TcxButtonEditProperties;
@@ -4274,10 +4445,25 @@ end;
 
 { TcxBoldHyperLinkEdit }
 
+procedure TcxBoldHyperLinkEdit.DoEnter;
+begin
+  inherited;
+  DataBinding.DoEnter;
+end;
+
 procedure TcxBoldHyperLinkEdit.DoExit;
 begin
   inherited;
   DataBinding.DoExit;
+end;
+
+procedure TcxBoldHyperLinkEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
 end;
 
 function TcxBoldHyperLinkEdit.GetActiveProperties: TcxHyperLinkEditProperties;
@@ -4386,35 +4572,19 @@ var
   lValue: variant;//string;
   lElement: TBoldElement;
   lIcxBoldEditProperties: IcxBoldEditProperties;  
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
 begin
-//  lValue := BoldProperties.GetCurrentAsVariant(Follower);
+//  lValue := BoldProperties.GetAsVariant(Follower);
   if fInternalChange = 0 then
   begin
-  {$IFNDEF AttracsBold}
-    if Assigned(Follower.Element) then
-    begin
-      lGuard := TBoldGuard.Create(lIE);
-      lIE := TBoldIndirectElement.Create;
-      Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-      lElement := lIE.Value;
-    end
-    else
-      lElement := nil;
-  {$ELSE}
-    lElement := Follower.ActualElement;
-  {$ENDIF}
-
+    lElement := Follower.Value;
     if Supports(Properties, IcxBoldEditProperties, lIcxBoldEditProperties) then
     begin
+//      if Assigned(lElement) then
         lValue := lIcxBoldEditProperties.BoldElementToEditValue(Follower, lElement, nil);
     end
     else
     begin
-      lValue := TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower);
+      lValue := TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower);
       if VarIsEmpty(lValue) then
         lValue := Null;
     end;
@@ -4429,6 +4599,19 @@ begin
   end;
 end;
 
+{
+function TcxBarBoldEditItem.CanEdit: Boolean;
+begin
+  result := inherited CanEdit;
+end;
+}
+{
+procedure TcxBarBoldEditItem.DoEditValueChanged(Sender: TObject);
+begin
+  inherited;
+
+end;
+}
 constructor TcxBarBoldEditItem.Create(AOwner: TComponent);
 begin
   inherited;
@@ -4436,6 +4619,8 @@ begin
   fBoldProperties.AfterMakeUptoDate := _AfterMakeUptoDate;
   fBoldProperties.OnGetContextType := GetContextType;
   fBoldHandleFollower := TBoldElementHandleFollower.Create(Owner, fBoldProperties);
+//  self.OnChange := EditValueChanged;
+//  self.OnEnter := EditEnter;
   self.OnExit := EditExit;
 end;
 
@@ -4548,9 +4733,33 @@ begin
     Key := #0;
 end;
 
+{ TcxBarBoldEditItemControl }
+{
+procedure TcxBarBoldEditItemControl.DoPostEditValue(Sender: TObject);
+begin
+  inherited;
+
+end;
+
+procedure TcxBarBoldEditItemControl.DoValidate(Sender: TObject;
+  var DisplayValue: TcxEditValue; var ErrorText: TCaption;
+  var Error: Boolean);
+begin
+  inherited;
+//  Error := Error or not (Item as TcxBarBoldEditItem).BoldProperties.ValidateString(DisplayValue, (Item as TcxBarBoldEditItem).Follower);
+//  if Error then
+//    Errortext := '+' + Errortext;
+//  (Item as TcxBarBoldEditItem).EditValueChanged(sender as TcxCustomEdit);
+end;
+}
+//type
+//  TcxCustomDropDownEditPropertiesAccess = Class(TcxCustomDropDownEditProperties);
+
 procedure TcxBarBoldEditItemControl.RestoreDisplayValue;
 begin
   inherited;
+//  if Properties is TcxCustomDropDownEditProperties then
+//    TcxCustomDropDownEditPropertiesAccess(Properties).AlwaysPostEditValue := true;
   Properties.ImmediatePost := true;
 end;
 
@@ -4558,6 +4767,7 @@ procedure TcxBarBoldEditItemControl.StoreDisplayValue;
 begin
   inherited;
   (Item as TcxBarBoldEditItem).EditValueChanged(Edit);
+//  if Edit is TcxCustomComboBox then
 end;
 
 function TcxCustomBoldTextEditProperties.ValidateComponent(
@@ -4582,8 +4792,8 @@ begin
       result := ComponentValidator.ValidateExpressionInContext(
         BoldRowProperties.Expression,
         lContext,
-        format('%s %s.BoldRowProperties.Expression', [NamePrefix, lName])
-        {$IFDEF AttracsBold}, BoldRowProperties.VariableList{$ENDIF}) and result; // do not localize
+        format('%s %s.BoldRowProperties.Expression', [NamePrefix, lName]),
+        BoldRowProperties.VariableList ) and result; // do not localize
     end;
   end;
 end;
@@ -4596,10 +4806,6 @@ procedure TcxBoldDateNavigator._AfterMakeUptoDate(Follower: TBoldFollower);
 var
   lValue: variant;//string;
   lElement: TBoldElement;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
   i,j: integer;
   lBoldComponentValidator: TBoldComponentValidator;
 begin
@@ -4613,19 +4819,7 @@ begin
     end;
     exit;
   end;
-{$IFNDEF AttracsBold}
-  if Assigned(Follower.Element) then
-  begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    lElement := lIE.Value;
-  end
-  else
-    lElement := nil;
-{$ELSE}
-  lElement := Follower.ActualElement;
-{$ENDIF}
+  lElement := Follower.Value;
   if Assigned(lElement) then
     lValue := lElement.AsVariant
   else
@@ -4668,6 +4862,10 @@ end;
 constructor TcxBoldDateNavigator.Create(AOwner: TComponent);
 begin
   inherited;
+//  fBoldProperties := TBoldVariantFollowerController.Create(Self);
+//  fBoldProperties.AfterMakeUptoDate := _AfterMakeUptoDate;
+//  fBoldProperties.OnGetContextType := GetContextType;
+
   fBoldStartProperties := TBoldVariantFollowerController.Create(Self);
   fBoldStartProperties.AfterMakeUptoDate := _AfterMakeUptoDate;
   fBoldStartProperties.OnGetContextType := GetStartContextType;
@@ -4694,7 +4892,13 @@ begin
       BoldEndProperties.MayHaveChanged(self.RealLastDate, EndFollower);
   end;
 end;
-
+{
+procedure TcxBoldDateNavigator.DoSelectionChangedEvent;
+begin
+  inherited;
+  BoldProperties.MayHaveChanged(DateToStr(self.date), Follower);
+end;
+}
 destructor TcxBoldDateNavigator.Destroy;
 begin
   case BoldStartProperties.ApplyPolicy of
@@ -4757,6 +4961,12 @@ begin
   result := fBoldStartHandleFollower.Follower;
 end;
 
+{procedure TcxBoldDateNavigator.SetBoldProperties(
+  const Value: TBoldVariantFollowerController);
+begin
+  fBoldProperties.Assign(Value);
+end;}
+
 procedure TcxBoldDateNavigator.SetBoldEndHandle(
   const Value: TBoldElementHandle);
 begin
@@ -4791,7 +5001,9 @@ var
   lExpressionType: TBoldElementTypeInfo;
   lDateTimeTypeInfo: TBoldAttributeTypeInfo;
   lDateTypeInfo: TBoldAttributeTypeInfo;
+//  s: string;
 begin
+//  OutPutDebugString(PChar('TcxBoldDateNavigator.ValidateComponent start'));
   lContext := GetStartContextType;
   result := Assigned(lContext);
   if not result then
@@ -4841,6 +5053,9 @@ begin
       end;
     end;
   end;
+//  fValueOrDefinitionInvalid := not result;
+//  s := 'TcxBoldDateNavigator.ValidateComponent:' + BoolToStr(result, true);
+//  OutPutDebugString(PChar(S));
 end;
 
 procedure TcxBoldDateNavigator.Loaded;
@@ -4897,6 +5112,7 @@ end;
 procedure TcxBoldLabel.Initialize;
 begin
   inherited Initialize;
+//  AutoSize := False;
   if IsDesigning and not IsLoading then
   begin
     _ValidateEdit(self);
@@ -4907,6 +5123,7 @@ procedure TcxBoldLabel.Paint;
 begin
   inherited;
   if DataBinding.ValueOrDefinitionInvalid then
+//    ViewInfo.TextColor := clRed;
     Canvas.FrameRect(Bounds, clRed, 3);
 end;
 
@@ -4981,6 +5198,15 @@ end;
 
 { TcxBoldRichEdit }
 
+procedure TcxBoldRichEdit.DoValidateDisplayValue(
+  var ADisplayValue: TcxEditValue; var AErrorText: TCaption;
+  var AError: Boolean);
+begin
+  inherited;
+  if Assigned(DataBinding) then
+    DataBinding.ValidateDisplayValue(ADisplayValue, AErrorText, AError);
+end;
+
 procedure TcxBoldRichEdit.EditingChanged;
 begin
   inherited;
@@ -5037,18 +5263,23 @@ end;
 
 { TcxBoldComboBoxEditDataBinding }
 
+constructor TcxBoldComboBoxEditDataBinding.Create(AEdit: TcxCustomEdit);
+begin
+  inherited;
+  Assert(TcxCustomEditAccess(AEdit).Properties is TcxBoldComboBoxProperties);
+  fBoldHandleFollower.PrioritizedQueuable := TcxBoldComboBoxProperties(TcxCustomEditAccess(AEdit).Properties).fListHandleFollower;
+  fBoldHandleFollower.StronglyDependedOfPrioritized := true;
+end;
+
 function TcxBoldComboBoxEditDataBinding.GetModified: Boolean;
 var
+//  lcxCustomTextEditAccess: TcxCustomTextEditAccess;
   lItemIndex: integer;
   lCount: integer;
   lOriginalElement, lNewElement: TBoldElement;
   lcxBoldComboBox: TcxBoldComboBox;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
 begin
-  if not IsDataAvailable or FEdit.ActiveProperties.ReadOnly then
+  if not IsDataAvailable or FEdit.ActiveProperties.ReadOnly or (TcxCustomTextEditAccess(Edit).ILookupData.ActiveControl = nil) then
   begin
     result := false;
     exit;
@@ -5057,23 +5288,13 @@ begin
   if result and ((VarIsNull(Edit.EditValue) and VarIsStr(StoredValue) and (StoredValue = ''))
     or (VarIsNull(StoredValue) and VarIsStr(Edit.EditValue) and (Edit.EditValue = ''))) then
     result := false;
+//  if not result then
   begin
     lcxBoldComboBox := Edit as TcxBoldComboBox;
-{$IFNDEF AttracsBold}
-    if Assigned(lcxBoldComboBox.DataBinding.Follower.Element) then
-    begin
-      lGuard := TBoldGuard.Create(lIE);
-      lIE := TBoldIndirectElement.Create;
-      lcxBoldComboBox.DataBinding.Follower.Element.EvaluateExpression(lcxBoldComboBox.DataBinding.BoldProperties.Expression, lIE, false, lcxBoldComboBox.DataBinding.BoldProperties.VariableList);
-      lOriginalElement := lIE.Value;
-    end
-    else
-      lOriginalElement := nil;
-{$ELSE}
-    lOriginalElement := lcxBoldComboBox.DataBinding.Follower.ActualElement;
-{$ENDIF}
+    lOriginalElement := lcxBoldComboBox.DataBinding.Follower.Value;
     if lOriginalElement is TBoldObjectReference then
       lOriginalElement := TBoldObjectReference(lOriginalElement).BoldObject;
+//    lItemIndex := TcxCustomTextEditAccess(Edit).ItemIndex;
     lCount := lcxBoldComboBox.ActiveProperties.LookupListFollower.SubFollowerCount-1;
     lItemIndex := TcxCustomEditListBox(TcxCustomTextEditAccess(Edit).ILookupData.ActiveControl).itemIndex;
 
@@ -5094,7 +5315,7 @@ begin
     end
     else
     begin
-      if not ((lcxBoldComboBox.Properties.BoldSelectChangeAction in [bdcsSetValue]) and (lOriginalElement is TBoldAttribute)) then
+      if not ((lcxBoldComboBox.Properties.BoldSelectChangeAction in [bdcsSetValue,bdscSetText]) and (lOriginalElement is TBoldAttribute)) then
       result := false;
     end;
   end;
@@ -5159,7 +5380,7 @@ function TcxCustomBoldTextEditProperties.BoldElementToEditValue(
   aFollower: TBoldFollower; aElement: TBoldElement;
   aEdit: TcxCustomEdit): variant;
 begin
-  result := BoldRowProperties.GetCurrentAsVariant(aFollower);
+  result := BoldRowProperties.GetAsVariant(aFollower);
 end;
 
 procedure TcxCustomBoldTextEditProperties.SetBoldSelectChangeAction(
@@ -5185,9 +5406,20 @@ begin
   end
   else
   begin
-    LocalSelectedElement := BoldLookupListHandle.List[lItemIndex];
+{    if ((lItemIndex = LookupListFollower.SubFollowerCount-1) and (BoldLookupListProperties.NilElementMode = neAddLast))
+    or ((lItemIndex = 0) and (BoldLookupListProperties.NilElementMode = neInsertFirst)) then
+    begin
+      LocalSelectedElement := nil
+    end
+    else
+    begin
+      if (BoldLookupListProperties.NilElementMode = neInsertFirst) then
+        dec(lItemIndex);
+}
+      LocalSelectedElement := BoldLookupListHandle.List[lItemIndex];
+//    end;
   end;
-  InternalComboSetValue(aBoldHandle, aFollower, LocalSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, BoldLookupListHandle);
+  InternalComboSetValue(aBoldHandle, aFollower, LocalSelectedElement, BoldSelectChangeAction, BoldSetValueExpression, BoldLookupListHandle, aValue);
   aDone := true;
 end;
 
@@ -5231,19 +5463,30 @@ procedure TcxBoldListBox._DeleteItem(Index: Integer;
   OwningFollower: TBoldFollower);
 begin
   if not (ListStyle in [lbVirtual, lbVirtualOwnerDraw]) then
+  begin
+    if not Items.Updating then
+      Items.BeginUpdate;
     Items.Delete(index);
+  end;
 end;
 
-{$IFNDEF AttracsBold}
-procedure TcxBoldListBox._InsertItem(Follower: TBoldFollower);
-{$ELSE}
 procedure TcxBoldListBox._InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
 begin
   Assert(Assigned(Follower));
+  if not Items.Updating then
+    Items.BeginUpdate;
   Follower.EnsureDisplayable;
   if not (ListStyle in [lbVirtual, lbVirtualOwnerDraw]) then
-    Items.Insert(Follower.Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower)))
+    Items.Insert(Follower.Index, VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower)))
+end;
+
+procedure TcxBoldListBox._ReplaceItem(Index: Integer; Follower: TBoldFollower);
+begin
+  if not Items.Updating then
+    Items.BeginUpdate;
+  Follower.EnsureDisplayable;
+  if not (ListStyle in [lbVirtual, lbVirtualOwnerDraw]) then
+    Items.Strings[Index] := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
 end;
 
 procedure TcxBoldListBox._RowAfterMakeUptoDate(Follower: TBoldFollower);
@@ -5254,7 +5497,7 @@ begin
   index := Follower.index;
   if (index > -1) and (index < Items.Count) then
   begin
-    s := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower));
+    s := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
     if s <> Items[index] then
       Items[index] := s;
   end;
@@ -5274,7 +5517,8 @@ begin
       Selected[ItemIndex] := true;
   end;
   SyncSelection;
-  Items.EndUpdate;
+  if Items.Updating then
+    Items.EndUpdate;
 end;
 
 procedure TcxBoldListBox._BeforeMakeUptoDate(Follower: TBoldFollower);
@@ -5282,7 +5526,6 @@ begin
   fBoldRowProperties.AfterMakeUptoDate := nil;
   if assigned(BoldListHandle) and assigned(BoldListHandle.list) then
     BoldListHandle.list.EnsureRange(0, BoldListHandle.list.Count-1);
-  Items.BeginUpdate;
 end;
 
 function TcxBoldListBox.GetBoldListHandle: TBoldAbstractListHandle;
@@ -5324,6 +5567,7 @@ begin
   begin
     OnAfterInsertItem := _InsertItem;
     OnAfterDeleteItem := _DeleteItem;
+    OnReplaceitem := _ReplaceItem;    
     BeforeMakeUptoDate := _BeforeMakeUptoDate;
     AfterMakeUptoDate := _AfterMakeUptoDate;
   end;
@@ -5359,7 +5603,8 @@ end;
 procedure TcxBoldListBox.WndProc(var Message: TMessage);
 begin
   inherited;
-  if (InnerListBox <> nil) and (Message.Msg = WM_COMMAND) and (Message.WParamHi = LBN_SELCHANGE) then
+  if (InnerListBox <> nil) and not IsDestroying and
+   ((Message.Msg = WM_CTLCOLORLISTBOX) or (Message.Msg = WM_COMMAND) and (Message.WParamHi = LBN_SELCHANGE)) and (Follower.CurrentIndex <> ItemIndex) then
   begin
     fListHandleFollower.SetFollowerIndex(ItemIndex);
     fInternalUpdate := true;
@@ -5377,15 +5622,9 @@ var
   lElement: TBoldElement;
 begin
   inherited;
-  if fBoldListProperties.DefaultDblClick and
-  {$IFDEF AttracsBold}Assigned(Follower.CurrentSubFollower) and Assigned(Follower.CurrentSubFollower.Element){$ELSE}
-  (Follower.CurrentIndex <> -1) and Assigned(Follower.SubFollowers[Follower.CurrentIndex]) and Assigned(Follower.SubFollowers[Follower.CurrentIndex].Element){$ENDIF} then
+  if fBoldListProperties.DefaultDblClick and Assigned(Follower.CurrentSubFollower) and Assigned(Follower.CurrentSubFollower.Element) then
   begin
-  {$IFDEF AttracsBold}
     lElement := Follower.CurrentSubFollower.Element;
-  {$ELSE}
-    lElement := Follower.SubFollowers[Follower.CurrentIndex].Element;
-  {$ENDIF}
     lAutoForm := AutoFormProviderRegistry.FormForElement(lElement);
     if assigned(lAutoForm) then
     begin
@@ -5396,7 +5635,10 @@ end;
 
 function TcxBoldListBox.GetFollower: TBoldFollower;
 begin
-  result := fListHandleFollower.Follower;
+  if Assigned(fListHandleFollower) then
+    result := fListHandleFollower.Follower
+  else
+    result := nil;  
 end;
 
 procedure TcxBoldListBox.Loaded;
@@ -5499,7 +5741,7 @@ begin
     if ItemIndex <> -1 then
       BoldListProperties.SetSelected(Follower, ItemIndex, true);
   end;
-  if BoldListHandle.CurrentIndex <> ItemIndex then
+  if Assigned(BoldListHandle) and (BoldListHandle.CurrentIndex <> ItemIndex) then
   begin
     BoldListHandle.CurrentIndex := ItemIndex;
     TBoldQueueable.DisplayAll;
@@ -5519,7 +5761,7 @@ begin
     result := ComponentValidator.ValidateExpressionInContext(
       BoldRowProperties.Expression,
       lContext,
-      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]){$IFDEF AttracsBold}, BoldRowProperties.VariableList{$ENDIF}); // do not localize
+      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]), BoldRowProperties.VariableList); // do not localize
   end;
 end;
 
@@ -5530,7 +5772,6 @@ begin
   // Will fetch all
   if assigned(BoldHandle) and assigned(Boldhandle.list) then
     BoldHandle.list.EnsureRange(0, BoldHandle.list.Count-1);
-  Items.BeginUpdate;
 end;
 
 procedure TcxBoldListView._AfterMakeUptoDate(Follower: TBoldFollower);
@@ -5540,61 +5781,58 @@ begin
     fBoldProperties.SelectAll(Follower, False)
   else
     ;
-  Items.EndUpdate;
+  if FUpdateCount > 0 then
+  begin
+    dec(FUpdateCount);
+    Items.EndUpdate;
+  end;
 end;
 
-{$IFNDEF AttracsBold}
-procedure TcxBoldListView._InsertItem(Follower: TBoldFollower);
-{$ELSE}
 procedure TcxBoldListView._InsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
 var
   lItem: TListItem;
-{$IFNDEF AttracsBold}
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
 begin
   Assert(Assigned(Follower));
-  lItem := Items.Insert(Follower.Index);
-{$IFNDEF AttracsBold}
-  if assigned(Follower.Element) then
+  if FUpdateCount = 0 then
   begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    lItem.Caption := lIE.Value.asString;
+    inc(FUpdateCount);
+    Items.BeginUpdate;
   end;
-{$ELSE}
-  lItem.Caption := Follower.ActualElement.AsString;
-{$ENDIF}
+  Follower.EnsureDisplayable;
+  lItem := Items.Insert(Follower.Index);
+  lItem.Caption := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
   lItem.ImageIndex := 0;
 end;
 
 procedure TcxBoldListView._DeleteItem(index: Integer;
   OwningFollower: TBoldFollower);
 begin
+  if FUpdateCount = 0 then
+  begin
+    inc(FUpdateCount);
+    Items.BeginUpdate;
+  end;
   Items.Delete(index);
 end;
 
-procedure TcxBoldListView._RowAfterMakeUptoDate(Follower: TBoldFollower);
-{$IFNDEF AttracsBold}
-var
-  lIE: TBoldIndirectElement;
-  lGuard: IBoldGuard;
-{$ENDIF}
+procedure TcxBoldListView._ReplaceItem(Index: Integer; Follower: TBoldFollower);
 begin
-{$IFNDEF AttracsBold}
-  if assigned(Follower.Element) then
+  if FUpdateCount = 0 then
   begin
-    lGuard := TBoldGuard.Create(lIE);
-    lIE := TBoldIndirectElement.Create;
-    Follower.Element.EvaluateExpression(TBoldFollowerControllerAccess(Follower.Controller).Expression, lIE, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    Items[Follower.index].Caption := lIE.Value.AsString;
+    inc(FUpdateCount);
+    Items.BeginUpdate;
   end;
-{$ELSE}
-  Items[Follower.index].Caption := Follower.ActualElement.AsString;
-{$ENDIF}
+  Follower.EnsureDisplayable;
+  items[Index].Caption := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
+end;
+
+procedure TcxBoldListView._RowAfterMakeUptoDate(Follower: TBoldFollower);
+var
+  NewValue: string;
+begin
+  NewValue := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
+  if Items[Follower.index].Caption <> NewValue then
+    Items[Follower.index].Caption := NewValue;
 end;
 
 function TcxBoldListView.GetBoldHandle: TBoldAbstractListHandle;
@@ -5683,6 +5921,7 @@ begin
   begin
     OnAfterInsertItem := _InsertItem;
     OnAfterDeleteItem := _DeleteItem;
+    OnReplaceitem := _ReplaceItem;
     BeforeMakeUptoDate := _BeforeMakeUptoDate;
     AfterMakeUptoDate := _AfterMakeUptoDate;
   end;
@@ -5698,6 +5937,24 @@ begin
   FreeAndNil(fBoldRowProperties);
   inherited Destroy;
 end;
+(*
+{ TcxBoldListBox }
+
+function TcxBoldListBox.GetDataBinding: TcxBoldDataBinding;
+begin
+  Result := TcxBoldDataBinding(FDataBinding);
+end;
+
+function TcxBoldListBox.GetDataBindingClass: TcxCustomDataBindingClass;
+begin
+  result := TcxBoldDataBinding;
+end;
+
+procedure TcxBoldListBox.SetDataBinding(Value: TcxBoldDataBinding);
+begin
+  FDataBinding.Assign(Value);
+end;
+*)
 
 { TcxBoldCustomCheckListBox }
 
@@ -5722,8 +5979,9 @@ begin
   fBoldListProperties.BeforeMakeUptoDate := _ListBeforeMakeUpToDate;
   fBoldlistProperties.OnAfterInsertItem := _ListInsertItem;
   fBoldListProperties.OnAfterDeleteItem := _ListDeleteItem;
+  fBoldListProperties.OnReplaceitem := _ReplaceItem;
 //  fBoldListProperties.DefaultDblClick := false;
-  fListHandleFollower := TBoldListHandleFollower.Create(self, fBoldListProperties);
+  fListHandleFollower := TBoldListHandleFollower.Create(AOwner, fBoldListProperties);
 end;
 
 destructor TcxBoldCustomCheckListBox.Destroy;
@@ -5884,7 +6142,7 @@ begin
   index := Follower.OwningFollower.index;
   if (index > -1) and (index < Items.Count) then
   begin
-    Items[Index].Text := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetCurrentAsVariant(Follower));
+    Items[Index].Text := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
   end;
 end;
 
@@ -5893,7 +6151,12 @@ procedure TcxBoldCustomCheckListBox._ListAfterMakeUpToDate(
 var
   lIndex: integer;
 begin
-  Items.EndUpdate;
+//  fBoldRowProperties.AfterMakeUptoDate := _RowAfterMakeUptoDate;
+  if FUpdateCount > 0 then
+  begin
+    dec(FUpdateCount);
+    Items.EndUpdate;
+  end;
   if not fInternalUpdate then
   begin
     lIndex := Follower.CurrentIndex;
@@ -5912,36 +6175,48 @@ begin
   // will fetch all
   if Assigned(BoldListHandle) and Assigned(BoldListHandle.List) then
     BoldListHandle.List.EnsureRange(0, BoldListHandle.List.Count - 1);
-  Items.BeginUpdate;
 end;
 
 procedure TcxBoldCustomCheckListBox._ListDeleteItem(Index: integer;
   Follower: TBoldFollower);
 begin
+  if FUpdateCount = 0 then
+  begin
+    inc(FUpdateCount);
+    Items.BeginUpdate;
+  end;
   Items.Delete(Index);
 end;
 
-{$IFNDEF AttracsBold}
-procedure TcxBoldCustomCheckListBox._ListInsertItem(Follower: TBoldFollower);
-{$ELSE}
 procedure TcxBoldCustomCheckListBox._ListInsertItem(Index: Integer; Follower: TBoldFollower);
-{$ENDIF}
 var
   lCheckListBoxItem: TcxCheckListBoxItem;
 begin
+  if FUpdateCount = 0 then
+  begin
+    inc(FUpdateCount);
+    Items.BeginUpdate;
+  end;
   Assert(Assigned(Follower));
   lCheckListBoxItem := Items.Insert(Follower.Index) as TcxCheckListBoxItem;
   if Assigned(Follower) then
   begin
     Follower.EnsureDisplayable;
-    {$IFNDEF AttracsBold}
-      if Assigned(Follower.Element) then
-        lCheckListBoxItem.Text := Follower.Element.EvaluateExpressionAsString(TBoldFollowerControllerAccess(Follower.Controller).Expression, brDefault, false, TBoldFollowerControllerAccess(Follower.Controller).VariableList);
-    {$ELSE}
-      if Assigned(Follower.ActualElement) then
-        lCheckListBoxItem.Text := Follower.ActualElement.AsString;
-    {$ENDIF}
+    if Assigned(Follower.Value) then
+      lCheckListBoxItem.Text := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
   end;
+end;
+
+procedure TcxBoldCustomCheckListBox._ReplaceItem(Index: Integer;
+  Follower: TBoldFollower);
+begin
+  if FUpdateCount = 0 then
+  begin
+    inc(FUpdateCount);
+    Items.BeginUpdate;
+  end;
+  Follower.EnsureDisplayable;
+  Items[Index].Text := VarToStr(TBoldVariantFollowerController(Follower.Controller).GetAsVariant(Follower));
 end;
 
 { TcxBoldSelectionCheckListBox }
@@ -5950,6 +6225,10 @@ constructor TcxBoldSelectionCheckListBox.Create(AOwner: TComponent);
 begin
   inherited;
   fPublisher := TBoldPublisher.Create;
+{
+  TBoldGetAsCheckBoxState = function (Element: TBoldElement; Representation: TBoldRepresentation; Expression: TBoldExpression): TCheckBoxState of object;
+  TBoldSetAsCheckBoxState = procedure (Element: TBoldElement; newValue: TCheckBoxState; Representation: TBoldRepresentation; Expression: TBoldExpression) of object;
+}
   fCheckBoxRenderer := TBoldAsCheckBoxStateRenderer.Create(self);
   fCheckBoxRenderer.OnGetAsCheckBoxState := GetAsCheckBoxState;
   fCheckBoxRenderer.OnSetAsCheckBoxState := SetAsCheckBoxState;
@@ -5965,20 +6244,12 @@ begin
 end;
 
 function TcxBoldSelectionCheckListBox.GetAsCheckBoxState(
-{$IFNDEF AttracsBold}
-  Element: TBoldElement; Representation: TBoldRepresentation; Expression: TBoldExpression
-{$ELSE}
   aFollower: TBoldFollower
-{$ENDIF}
   ): TCheckBoxState;
 begin
   if Assigned(BoldSelectionHandle) then
   begin
-{$IFNDEF AttracsBold}
-    if (BoldSelectionHandle.List.IndexOf(Element) <> -1 ) then
-{$ELSE}
     if (BoldSelectionHandle.List.IndexOf(aFollower.Element) <> -1 ) then
-{$ENDIF}
       Result := cbChecked
     else
       Result := cbUnChecked;
@@ -5988,19 +6259,11 @@ begin
 end;
 
 procedure TcxBoldSelectionCheckListBox.SetAsCheckBoxState(
-{$IFNDEF AttracsBold}
-  Element: TBoldElement; newValue: TCheckBoxState; Representation: TBoldRepresentation; Expression: TBoldExpression);
-{$ELSE}
   aFollower: TBoldFollower; newValue: TCheckBoxState);
-{$ENDIF}
 var
   lElement: TBoldElement;
 begin
-{$IFNDEF AttracsBold}
-  lElement := Element;
-{$ELSE}
   lElement := aFollower.Element;
-{$ENDIF}
   if Assigned(BoldSelectionHandle) then
   begin
     case newValue of
@@ -6020,11 +6283,7 @@ begin
 end;
 
 procedure TcxBoldSelectionCheckListBox.OnSubscribe(
-{$IFNDEF AttracsBold}
-  Element: TBoldElement; Representation: TBoldRepresentation; Expression: TBoldExpression; Subscriber: TBoldSubscriber);
-{$ELSE}
   aFollower: TBoldFollower; Subscriber: TBoldSubscriber);
-{$ENDIF}
 begin
   if Assigned(BoldSelectionHandle) then
   begin
@@ -6058,7 +6317,7 @@ begin
     result := ComponentValidator.ValidateExpressionInContext(
       BoldRowProperties.Expression,
       lContext,
-      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]){$IFDEF AttracsBold}, BoldRowProperties.VariableList{$ENDIF}); // do not localize
+      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]), BoldRowProperties.VariableList); // do not localize
   end;
 end;
 
@@ -6077,11 +6336,11 @@ begin
     result := ComponentValidator.ValidateExpressionInContext(
       BoldRowProperties.Expression,
       lContext,
-      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]){$IFDEF AttracsBold}, BoldRowProperties.VariableList{$ENDIF}); // do not localize
+      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]), BoldRowProperties.VariableList); // do not localize
     result := ComponentValidator.ValidateExpressionInContext(
       BoldRowCheckBoxProperties.Expression,
       lContext,
-      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]){$IFDEF AttracsBold}, BoldRowCheckBoxProperties.VariableList{$ENDIF}) and result; // do not localize
+      format('%s %s.BoldRowProperties.Expression', [NamePrefix, Name]), BoldRowCheckBoxProperties.VariableList) and result; // do not localize
   end;
 end;
 
@@ -6091,11 +6350,15 @@ initialization
   FilterEditsController.Register(TcxBoldTextEditProperties, TcxFilterTextEditHelper);
   FilterEditsController.Register(TcxBoldComboBoxProperties, TcxFilterComboBoxHelper);
   dxBarRegisterItem(TcxBarBoldEditItem, TcxBarEditItemControl, True);
+//  BarDesignController.RegisterBarControlEditor(TcxItemsEditorEx);
 
 
 finalization
+  dxBarUnregisterItem(TcxBarBoldEditItem);
   FilterEditsController.Unregister(TcxBoldTextEditProperties, TcxFilterTextEditHelper);
   FilterEditsController.Unregister(TcxBoldComboBoxProperties, TcxFilterComboBoxHelper);
-  dxBarUnregisterItem(TcxBarBoldEditItem);
+  GetRegisteredEditProperties.UnRegister(TcxBoldTextEditProperties);
+  GetRegisteredEditProperties.UnRegister(TcxBoldComboBoxProperties);
+//  BarDesignController.UnregisterBarControlEditor(TcxItemsEditorEx);
 
 end.

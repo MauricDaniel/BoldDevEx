@@ -33,7 +33,7 @@ uses Dialogs, cxGrid;
 
 procedure Register;
 begin
-  RegisterComponents('Express BoldEditors', [TBoldToCxGridConverter]);
+  RegisterComponents('AT Core', [TBoldToCxGridConverter]);
 end;
 
 { TBoldToCxGridConverter }

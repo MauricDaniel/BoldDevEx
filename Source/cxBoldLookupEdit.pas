@@ -696,8 +696,7 @@ begin
       result := ComponentValidator.ValidateExpressionInContext(
         TBoldFollowerControllerAccess(DataController.BoldProperties).Expression,
         lContext,
-        format('%s %s.BoldProperties.Expression', [NamePrefix, lName])
-        {$IFDEF Attracs}, DataController.BoldProperties.VariableList{$ENDIF}) and result; // do not localize
+        format('%s %s.BoldProperties.Expression', [NamePrefix, lName]), DataController.BoldProperties.VariableList) and result; // do not localize
       if (BoldSelectChangeAction = bdcsSetValue) and (Owner is TcxCustomEdit) then
       begin
         lcxBoldEditDataBinding := TcxCustomEditAccess(TcxCustomEdit(Owner)).DataBinding as TcxBoldEditDataBinding;
@@ -705,8 +704,8 @@ begin
         result := ComponentValidator.ValidateExpressionInContext(
           BoldSetValueExpression,
           lContext,
-          format('%s %s.BoldSetValueExpression', [NamePrefix, lName])
-          {$IFDEF Attracs}, lcxBoldEditDataBinding.BoldProperties.VariableList{$ENDIF}) and result; // do not localize
+          format('%s %s.BoldSetValueExpression', [NamePrefix, lName]),
+          lcxBoldEditDataBinding.BoldProperties.VariableList) and result; // do not localize
       end;
     end;
   end;

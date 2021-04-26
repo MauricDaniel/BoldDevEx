@@ -2,7 +2,11 @@ unit dxBarBoldNav;
 
 interface
 
+{$I bold.inc}
 {$I cxVer.inc}
+
+
+//  v2.03 - 25 Jan 2011  2007-2011 Daniel Mauric
 
 uses
   Classes, Messages, DB, cxClasses, dxBar,
@@ -83,7 +87,7 @@ type
     function GetBoldListHandle: TBoldAbstractListHandle;
 
     procedure SetBarManager(Value: TdxBarManager);
-    procedure SetCategoryName(Value: string);
+    procedure SetCategoryName(const Value: String);
     procedure SetVisibleButtons(Value: TBoldButtonSet);
 
     procedure AddButton(AButton: TdxBarBoldNavButton);
@@ -171,8 +175,11 @@ begin
       if BarBoldNavigator <> nil then
       begin
         BarBoldNavigator.AddButton(Self);
-          Glyph.LoadFromResourceName(HInstance,
-            PChar(BtnResStr + IntToStr(Integer(FNavButton) + 1)));
+{$IFDEF BOLD_DELPHI25_OR_LATER}
+        Glyph.LoadFromResource(HInstance, PChar(BtnResStr + IntToStr(Integer(FNavButton) + 1)), RT_BITMAP);
+{$ELSE}
+        Glyph.LoadFromResourceName(HInstance, PChar(BtnResStr + IntToStr(Integer(FNavButton) + 1)));
+{$ENDIF}
       end;
       try
         if BarManager.Designing then
@@ -339,7 +346,7 @@ begin
   end;
 end;
 
-procedure TdxBarBoldNavigator.SetCategoryName(Value: string);
+procedure TdxBarBoldNavigator.SetCategoryName(const Value: String);
 var
   Index1, Index2: Integer;
   I: TBoldNavigateBtn;
